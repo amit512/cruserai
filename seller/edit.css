@@ -1,0 +1,200 @@
+/* ========== General Reset ========== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+body {
+  background-color: #f7f8fa;
+  color: #333;
+  line-height: 1.6;
+}
+
+/* ========== Header ========== */
+.main-header {
+  background: #2c3e50;
+  color: #fff;
+  padding: 15px 25px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  font-size: 1.6rem;
+  font-weight: bold;
+}
+.logo span {
+  color: #f39c12;
+}
+
+.nav-links ul {
+  display: flex;
+  gap: 20px;
+  list-style: none;
+}
+.nav-links a {
+  color: #ddd;
+  text-decoration: none;
+  font-size: 0.95rem;
+  padding: 5px 10px;
+  border-radius: 6px;
+  transition: 0.3s;
+}
+.nav-links a:hover,
+.nav-links a.active {
+  background: #f39c12;
+  color: #fff;
+}
+
+.header-icons {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+.welcome {
+  font-weight: 500;
+}
+.btn.login {
+  background: #e74c3c;
+  color: #fff;
+  padding: 6px 14px;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: 0.3s;
+}
+.btn.login:hover {
+  background: #c0392b;
+}
+
+/* ========== Hero Section ========== */
+.dashboard-hero {
+  text-align: center;
+  padding: 50px 20px;
+  background: linear-gradient(to right, #f39c12, #e67e22);
+  color: #fff;
+}
+.dashboard-hero h1 {
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+.dashboard-hero p {
+  font-size: 1.1rem;
+  opacity: 0.9;
+}
+
+/* ========== Form Section ========== */
+.dashboard-products {
+  max-width: 700px;
+  margin: 40px auto;
+  padding: 30px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.product-form label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 8px;
+  margin-top: 18px;
+  color: #2c3e50;
+}
+
+.product-form input,
+.product-form textarea,
+.product-form select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  transition: border 0.3s;
+}
+
+.product-form input:focus,
+.product-form textarea:focus {
+  border-color: #f39c12;
+  outline: none;
+}
+
+.product-form textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.product-form img {
+  margin-top: 10px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+}
+
+/* Buttons */
+.btn {
+  display: inline-block;
+  margin-top: 20px;
+  padding: 10px 20px;
+  background: #f39c12;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  text-decoration: none;
+  transition: 0.3s;
+}
+.btn:hover {
+  background: #e67e22;
+}
+
+.btn-danger {
+  background: #e74c3c;
+  margin-left: 10px;
+}
+.btn-danger:hover {
+  background: #c0392b;
+}
+
+/* ========== Messages ========== */
+.empty-message {
+  text-align: center;
+  margin-bottom: 15px;
+  font-weight: 500;
+}
+
+/* ========== Footer ========== */
+.footer {
+  background: #2c3e50;
+  color: #fff;
+  padding: 40px 20px 20px;
+  margin-top: 60px;
+}
+.footer-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 30px;
+}
+.footer-section h4 {
+  margin-bottom: 10px;
+  font-size: 1.1rem;
+}
+.footer-section a {
+  display: block;
+  text-decoration: none;
+  color: #ddd;
+  margin-bottom: 6px;
+  transition: 0.3s;
+}
+.footer-section a:hover {
+  color: #f39c12;
+}
+.footer-bottom {
+  text-align: center;
+  margin-top: 25px;
+  font-size: 0.85rem;
+  border-top: 1px solid rgba(255,255,255,0.2);
+  padding-top: 12px;
+}

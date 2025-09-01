@@ -1,0 +1,119 @@
+/* Base Table Styling */
+.orders-container {
+    background-color: #fff;
+    margin: 20px auto;
+    padding: 25px;
+    border-radius: 12px;
+    max-width: 1000px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.05);
+}
+
+.orders-container h2 {
+    font-size: 1.5rem;
+    color: #2d3436;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+/* Orders Table */
+.orders-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    font-size: 0.95rem;
+}
+
+.orders-table th,
+.orders-table td {
+    padding: 12px 15px;
+    text-align: center;
+    border-bottom: 1px solid #dfe6e9;
+}
+
+.orders-table th {
+    background-color: #2d3436;
+    color: #ffeaa7;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+}
+
+.orders-table tr:hover {
+    background-color: #f9f9f9;
+}
+
+/* Status Badges */
+.status {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 0.85rem;
+}
+
+.status.pending {
+    background-color: #ffeaa7;
+    color: #2d3436;
+}
+
+.status.completed {
+    background-color: #55efc4;
+    color: #2d3436;
+}
+
+.status.cancelled {
+    background-color: #ff7675;
+    color: #fff;
+}
+
+/* Actions Buttons */
+.order-actions a {
+    text-decoration: none;
+    margin: 0 5px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.order-actions .btn-view {
+    background-color: #2d3436;
+    color: #fff;
+}
+
+.order-actions .btn-view:hover {
+    background-color: #636e72;
+}
+
+.order-actions .btn-cancel {
+    background-color: #ff7675;
+    color: #fff;
+}
+
+.order-actions .btn-cancel:hover {
+    background-color: #d63031;
+}
+
+/* Empty Orders */
+.empty-orders {
+    text-align: center;
+    padding: 20px;
+    background-color: #f1f2f6;
+    border-radius: 10px;
+    font-style: italic;
+    color: #636e72;
+    font-weight: 500;
+}
+
+/* Responsive */
+@media(max-width: 768px) {
+    .orders-table th,
+    .orders-table td {
+        padding: 10px 8px;
+        font-size: 0.85rem;
+    }
+    .orders-container {
+        padding: 20px;
+    }
+}

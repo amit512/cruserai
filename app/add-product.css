@@ -1,0 +1,220 @@
+/* Base & Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    background-color: #f5f6fa;
+    color: #333;
+}
+
+/* Header */
+.main-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #2d3436;
+    padding: 15px 30px;
+    color: #fff;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.main-header .logo {
+    font-size: 1.6rem;
+    font-weight: bold;
+    color: #ffeaa7;
+}
+
+.main-header .nav-links ul {
+    display: flex;
+    list-style: none;
+    gap: 25px;
+}
+
+.main-header .nav-links ul li a {
+    color: #dfe6e9;
+    text-decoration: none;
+    font-weight: 500;
+    transition: 0.3s;
+}
+
+.main-header .nav-links ul li a:hover,
+.main-header .nav-links ul li a.active {
+    color: #ffeaa7;
+}
+
+.header-icons {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.header-icons .welcome {
+    font-weight: 500;
+    color: #dfe6e9;
+}
+
+.header-icons .btn {
+    background-color: #ffeaa7;
+    color: #2d3436;
+    padding: 7px 15px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.header-icons .btn:hover {
+    background-color: #fdcb6e;
+}
+
+/* Hero Section */
+.dashboard-hero {
+    background-color: #fff;
+    margin: 20px auto;
+    padding: 30px;
+    border-radius: 12px;
+    max-width: 900px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    text-align: center;
+}
+
+.dashboard-hero h1 {
+    font-size: 1.8rem;
+    margin-bottom: 10px;
+    color: #2d3436;
+}
+
+.dashboard-hero p {
+    font-size: 1rem;
+    color: #636e72;
+}
+
+/* Form Section */
+.dashboard-products form {
+    background-color: #fff;
+    padding: 25px;
+    border-radius: 12px;
+    max-width: 700px;
+    margin: 0 auto 30px auto;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.dashboard-products form label {
+    display: flex;
+    flex-direction: column;
+    font-weight: 500;
+    color: #2d3436;
+    font-size: 0.95rem;
+}
+
+.dashboard-products form input[type="text"],
+.dashboard-products form input[type="number"],
+.dashboard-products form input[type="file"],
+.dashboard-products form textarea {
+    margin-top: 5px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #dfe6e9;
+    font-size: 0.95rem;
+    outline: none;
+    transition: 0.3s;
+}
+
+.dashboard-products form input:focus,
+.dashboard-products form textarea:focus {
+    border-color: #fdcb6e;
+    box-shadow: 0 0 5px rgba(253,203,110,0.4);
+}
+
+.dashboard-products form textarea {
+    resize: vertical;
+}
+
+.dashboard-products form .btn {
+    width: fit-content;
+    padding: 10px 20px;
+    background-color: #2d3436;
+    color: #fff;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.dashboard-products form .btn:hover {
+    background-color: #636e72;
+}
+
+/* Messages */
+.empty-message {
+    text-align: center;
+    padding: 20px;
+    background-color: #f1f2f6;
+    border-radius: 10px;
+    font-style: italic;
+    color: #636e72;
+    font-weight: 500;
+    margin-bottom: 20px;
+}
+
+/* Footer */
+.footer {
+    background-color: #2d3436;
+    color: #dfe6e9;
+    padding: 25px 30px;
+    margin-top: 30px;
+}
+
+.footer-container {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+.footer-section h4 {
+    margin-bottom: 12px;
+    color: #ffeaa7;
+}
+
+.footer-section a {
+    color: #dfe6e9;
+    display: block;
+    text-decoration: none;
+    margin-bottom: 6px;
+}
+
+.footer-section a:hover {
+    color: #ffeaa7;
+}
+
+.footer-bottom {
+    text-align: center;
+    margin-top: 15px;
+    font-size: 0.9rem;
+    color: #b2bec3;
+}
+
+/* Responsive */
+@media(max-width: 768px) {
+    .main-header {
+        flex-direction: column;
+        gap: 10px;
+    }
+    .main-header .nav-links ul {
+        flex-direction: column;
+        gap: 10px;
+    }
+    .dashboard-products form {
+        padding: 20px;
+        gap: 15px;
+    }
+}

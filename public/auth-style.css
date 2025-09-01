@@ -1,0 +1,108 @@
+/* Reset & Base */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: linear-gradient(135deg, #f9f6e7 0%, #e0c3fc 100%); /* Soft artistic background */
+  font-family: 'Segoe UI', sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+/* Container */
+.auth-container {
+  width: 100%;
+  max-width: 420px;
+  padding: 2rem;
+}
+
+.auth-box {
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+  padding: 2.5rem;
+  text-align: center;
+}
+
+.auth-box h2 {
+  margin-bottom: 0.5rem;
+  font-size: 2rem;
+  color: #333;
+}
+
+.auth-box p {
+  margin-bottom: 2rem;
+  color: #666;
+}
+
+/* Input Groups */
+.input-group {
+  display: flex;
+  align-items: center;
+  background: #f2f2f2;
+  padding: 0.6rem 1rem;
+  border-radius: 30px;
+  margin-bottom: 1.2rem;
+}
+
+.input-group i {
+  color: #999;
+  margin-right: 0.6rem;
+}
+
+.input-group input {
+  border: none;
+  background: transparent;
+  outline: none;
+  flex: 1;
+  font-size: 1rem;
+  color: #333;
+}
+
+/* Buttons */
+.btn {
+  padding: 0.75rem 2rem;
+  font-weight: bold;
+  border-radius: 30px;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background 0.3s ease;
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.login-btn {
+  background: linear-gradient(135deg, #43cea2 0%, #185a9d 100%); /* Artistic: teal to blue */
+  color: #fff;
+}
+
+.login-btn:hover {
+  background: linear-gradient(135deg, #185a9d 0%, #43cea2 100%);
+}
+
+.register-btn {
+  background: linear-gradient(135deg, #f7971e 0%, #8f94fb 100%); /* Artistic: gold to purple */
+  color: #fff;
+}
+
+.register-btn:hover {
+  background: linear-gradient(135deg, #8f94fb 0%, #f7971e 100%);
+}
+
+/* Switch link */
+.switch-text {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}
+
+.switch-text a {
+  color: #8f94fb;
+  text-decoration: none;
+  font-weight: 600;
+}

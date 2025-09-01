@@ -1,0 +1,15 @@
+.btn.shop {
+  background: linear-gradient(135deg, #43cea2 0%, #185a9d 50%, #f7971e 100%); /* Artistic: teal, blue, gold */
+  color: white;
+  padding: 0.8rem 1.5rem;
+  border-radius: 30px;
+  font-weight: bold;
+  text-decoration: none;
+  font-size: 1rem;
+  display: inline-block;
+  transition: background 0.3s ease;
+}
+
+.btn.shop:hover {
+  background: linear-gradient(135deg, #f7971e 0%, #43cea2 100%); /* Artistic: gold to teal */
+}
