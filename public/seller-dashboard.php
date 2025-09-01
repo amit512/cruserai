@@ -49,9 +49,9 @@ $orders = $stmt->fetchAll();
 <link rel="stylesheet" href="startstyle.css"/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
 <style>
-  /* Seller Dashboard Specific Styles */
+  /* Seller Dashboard Specific Styles - Matching Buyer Dashboard Theme */
   body {
-    font-family: 'Segoe UI', sans-serif;
+    font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
     background: #f5f5f5;
@@ -62,7 +62,7 @@ $orders = $stmt->fetchAll();
   }
   
   .dashboard-hero {
-    background: linear-gradient(135deg, #ff6b6b, #f0c987);
+    background: linear-gradient(135deg, #4CAF50, #45a049);
     color: white;
     text-align: center;
     padding: 3rem 0;
@@ -142,7 +142,7 @@ $orders = $stmt->fetchAll();
   }
   
   .stat-value {
-    color: #ff6b6b;
+    color: #4CAF50;
     font-weight: bold;
     font-size: 1.1rem;
   }
@@ -169,9 +169,9 @@ $orders = $stmt->fetchAll();
   }
   
   .quick-link.active {
-    background: #ff6b6b;
+    background: #4CAF50;
     color: white;
-    border-color: #ff6b6b;
+    border-color: #4CAF50;
   }
   
   /* Main Content */
@@ -204,15 +204,17 @@ $orders = $stmt->fetchAll();
     text-align: center;
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     transition: transform 0.3s ease;
+    border: 1px solid #f0f0f0;
   }
   
   .stat:hover {
     transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
   }
   
   .stat i {
     font-size: 2.5rem;
-    color: #ff6b6b;
+    color: #4CAF50;
     margin-bottom: 1rem;
   }
   
@@ -237,6 +239,7 @@ $orders = $stmt->fetchAll();
     padding: 2rem;
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     margin-bottom: 2rem;
+    border: 1px solid #f0f0f0;
   }
   
   .dashboard-products h2,
@@ -252,9 +255,9 @@ $orders = $stmt->fetchAll();
   
   .btn {
     padding: 0.75rem 1.5rem;
-    border-radius: 20px;
+    border-radius: 8px;
     border: 1px solid transparent;
-    font-weight: bold;
+    font-weight: 500;
     cursor: pointer;
     transition: all 0.3s ease;
     text-decoration: none;
@@ -263,13 +266,13 @@ $orders = $stmt->fetchAll();
   }
   
   .btn-primary {
-    background: #ff6b6b;
+    background: #4CAF50;
     color: white;
-    border-color: #ff6b6b;
+    border-color: #4CAF50;
   }
   
   .btn-primary:hover {
-    background: #e55a5a;
+    background: #45a049;
     transform: translateY(-2px);
   }
   
@@ -285,13 +288,13 @@ $orders = $stmt->fetchAll();
   }
   
   .btn-edit {
-    background: #28a745;
+    background: #2196F3;
     color: white;
-    border-color: #28a745;
+    border-color: #2196F3;
   }
   
   .btn-edit:hover {
-    background: #218838;
+    background: #1976D2;
     transform: translateY(-2px);
   }
   
@@ -304,6 +307,7 @@ $orders = $stmt->fetchAll();
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border: 1px solid #f0f0f0;
   }
   
   th, td {
