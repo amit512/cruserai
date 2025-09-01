@@ -10,53 +10,63 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'seller') {
 $user = $_SESSION['user'];
 $pdo = db();
 
-// Get search and filter parameters
+// Get filter parameters
 $search = $_GET['search'] ?? '';
-$category = $_GET['category'] ?? '';
-$status = $_GET['status'] ?? '';
+$sort_by = $_GET['sort_by'] ?? 'total_spent';
+$sort_order = $_GET['sort_order'] ?? 'DESC';
 
 // Build the query with filters
-$whereConditions = ['seller_id = ?'];
+$whereConditions = ['o.seller_id = ?'];
 $params = [$user['id']];
 
 if ($search) {
-    $whereConditions[] = '(name LIKE ? OR description LIKE ?)';
+    $whereConditions[] = '(u.name LIKE ? OR u.email LIKE ?)';
     $params[] = "%$search%";
     $params[] = "%$search%";
-}
-
-if ($category) {
-    $whereConditions[] = 'category = ?';
-    $params[] = $category;
-}
-
-if ($status !== '') {
-    $whereConditions[] = 'is_active = ?';
-    $params[] = $status;
 }
 
 $whereClause = implode(' AND ', $whereConditions);
 
-// Fetch all products of this seller with filters
-$stmt = $pdo->prepare("SELECT * FROM products WHERE $whereClause ORDER BY created_at DESC");
+// Fetch customers with their purchase data
+$stmt = $pdo->prepare("
+    SELECT u.id, u.name, u.email, u.created_at as customer_since,
+           COUNT(DISTINCT o.id) as total_orders,
+           SUM(o.total) as total_spent,
+           MAX(o.created_at) as last_order_date,
+           AVG(o.total) as avg_order_value
+    FROM users u
+    JOIN orders o ON u.id = o.buyer_id
+    WHERE $whereClause
+    GROUP BY u.id
+    ORDER BY $sort_by $sort_order
+");
 $stmt->execute($params);
-$products = $stmt->fetchAll();
+$customers = $stmt->fetchAll();
 
-// Get categories for filter
-$categories = get_categories();
-
-// Get product counts for stats
-$stmt = $pdo->prepare("SELECT COUNT(*) as total FROM products WHERE seller_id = ?");
+// Get customer statistics
+$stmt = $pdo->prepare("
+    SELECT COUNT(DISTINCT buyer_id) as total_customers,
+           COUNT(*) as total_orders,
+           SUM(total) as total_revenue,
+           AVG(total) as avg_order_value
+    FROM orders 
+    WHERE seller_id = ?
+");
 $stmt->execute([$user['id']]);
-$totalProducts = $stmt->fetch()['total'];
+$customer_stats = $stmt->fetch();
 
-$stmt = $pdo->prepare("SELECT COUNT(*) as active FROM products WHERE seller_id = ? AND is_active = 1");
+// Get top customers
+$stmt = $pdo->prepare("
+    SELECT u.name, SUM(o.total) as total_spent, COUNT(o.id) as orders
+    FROM orders o
+    JOIN users u ON o.buyer_id = u.id
+    WHERE o.seller_id = ?
+    GROUP BY u.id
+    ORDER BY total_spent DESC
+    LIMIT 5
+");
 $stmt->execute([$user['id']]);
-$activeProducts = $stmt->fetch()['active'];
-
-$stmt = $pdo->prepare("SELECT COUNT(*) as inactive FROM products WHERE seller_id = ? AND is_active = 0");
-$stmt->execute([$user['id']]);
-$inactiveProducts = $stmt->fetch()['inactive'];
+$top_customers = $stmt->fetchAll();
 ?>
 
 <!DOCTYPE html>
@@ -64,12 +74,12 @@ $inactiveProducts = $stmt->fetch()['inactive'];
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Manage Products - <?= SITE_NAME ?></title>
+<title>Customer Management - <?= SITE_NAME ?></title>
 <link rel="stylesheet" href="../public/handcraf.css"/>
 <link rel="stylesheet" href="../public/startstyle.css"/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
 <style>
-  /* Manage Products Styles - Matching Buyer Dashboard Theme */
+  /* Customer Management Styles - Matching Buyer Dashboard Theme */
   body {
     font-family: Arial, sans-serif;
     margin: 0;
@@ -102,7 +112,7 @@ $inactiveProducts = $stmt->fetch()['inactive'];
   }
   
   .container {
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
     padding: 0 1rem;
   }
@@ -232,41 +242,19 @@ $inactiveProducts = $stmt->fetch()['inactive'];
     transform: translateY(-2px);
   }
   
-  .btn-danger {
-    background: #dc3545;
+  .btn-info {
+    background: #17a2b8;
     color: white;
-    border-color: #dc3545;
+    border-color: #17a2b8;
   }
   
-  .btn-danger:hover {
-    background: #c82333;
+  .btn-info:hover {
+    background: #138496;
     transform: translateY(-2px);
   }
   
-  .btn-edit {
-    background: #2196F3;
-    color: white;
-    border-color: #2196F3;
-  }
-  
-  .btn-edit:hover {
-    background: #1976D2;
-    transform: translateY(-2px);
-  }
-  
-  .btn-success {
-    background: #28a745;
-    color: white;
-    border-color: #28a745;
-  }
-  
-  .btn-success:hover {
-    background: #218838;
-    transform: translateY(-2px);
-  }
-  
-  /* Products Section */
-  .products-section {
+  /* Top Customers */
+  .top-customers {
     background: white;
     border-radius: 15px;
     padding: 2rem;
@@ -275,14 +263,62 @@ $inactiveProducts = $stmt->fetch()['inactive'];
     border: 1px solid #f0f0f0;
   }
   
-  .products-header {
+  .top-customers h3 {
+    color: #333;
+    margin-bottom: 1.5rem;
+    font-size: 1.3rem;
+    font-weight: bold;
+  }
+  
+  .customer-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  
+  .customer-item:last-child {
+    border-bottom: none;
+  }
+  
+  .customer-name {
+    font-weight: 500;
+    color: #333;
+  }
+  
+  .customer-stats {
+    text-align: right;
+  }
+  
+  .customer-orders {
+    font-size: 0.9rem;
+    color: #666;
+  }
+  
+  .customer-spent {
+    font-weight: bold;
+    color: #4CAF50;
+  }
+  
+  /* Customers Table */
+  .customers-section {
+    background: white;
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+    border: 1px solid #f0f0f0;
+  }
+  
+  .customers-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 2rem;
   }
   
-  .products-header h2 {
+  .customers-header h2 {
     color: #333;
     font-size: 1.5rem;
     font-weight: bold;
@@ -313,6 +349,12 @@ $inactiveProducts = $stmt->fetch()['inactive'];
     font-size: 0.9rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  th:hover {
+    background: #e9ecef;
   }
   
   td {
@@ -324,12 +366,34 @@ $inactiveProducts = $stmt->fetch()['inactive'];
     background: #f8f9fa;
   }
   
-  .product-image {
-    width: 80px;
-    height: 80px;
-    object-fit: cover;
-    border-radius: 8px;
-    border: 2px solid #e0e0e0;
+  .customer-avatar {
+    width: 40px;
+    height: 40px;
+    background: #4CAF50;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 1.1rem;
+  }
+  
+  .customer-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  .customer-details h4 {
+    margin: 0;
+    color: #333;
+    font-size: 1rem;
+  }
+  
+  .customer-details small {
+    color: #666;
+    font-size: 0.85rem;
   }
   
   .status-badge {
@@ -350,15 +414,6 @@ $inactiveProducts = $stmt->fetch()['inactive'];
     color: #721c24;
   }
   
-  .category-badge {
-    padding: 0.25rem 0.75rem;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: 500;
-    background: #e3f2fd;
-    color: #1976d2;
-  }
-  
   .empty-message {
     text-align: center;
     color: #666;
@@ -369,53 +424,16 @@ $inactiveProducts = $stmt->fetch()['inactive'];
     border: 2px dashed #dee2e6;
   }
   
-  .actions-cell {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-  }
-  
-  /* Alert Messages */
-  .alert {
-    padding: 1rem 1.5rem;
-    border-radius: 8px;
-    margin-bottom: 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    font-weight: 500;
-  }
-  
-  .alert-success {
-    background: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
-  }
-  
-  .alert-danger {
-    background: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
-  }
-  
-  .alert i {
-    font-size: 1.1rem;
-  }
-  
   /* Responsive Design */
   @media (max-width: 768px) {
     .filters-form {
       grid-template-columns: 1fr;
     }
     
-    .products-header {
+    .customers-header {
       flex-direction: column;
       gap: 1rem;
       align-items: flex-start;
-    }
-    
-    .actions-cell {
-      flex-direction: column;
     }
     
     table {
@@ -426,9 +444,10 @@ $inactiveProducts = $stmt->fetch()['inactive'];
       padding: 0.5rem;
     }
     
-    .product-image {
-      width: 60px;
-      height: 60px;
+    .customer-info {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
     }
   }
 </style>
@@ -440,8 +459,9 @@ $inactiveProducts = $stmt->fetch()['inactive'];
   <nav class="nav-links">
     <ul>
       <li><a href="../public/seller-dashboard.php">Dashboard</a></li>
-      <li><a href="manage-products.php" class="active">Products</a></li>
+      <li><a href="manage-products.php">Products</a></li>
       <li><a href="manage-order.php">Orders</a></li>
+      <li><a href="manage-customers.php" class="active">Customers</a></li>
     </ul>
   </nav>
   <div class="header-icons">
@@ -452,8 +472,8 @@ $inactiveProducts = $stmt->fetch()['inactive'];
 
 <section class="dashboard-hero">
   <div class="container">
-    <h1>Manage Your Products</h1>
-    <p>Add, edit, or remove your handcrafted items.</p>
+    <h1>Customer Management</h1>
+    <p>Manage your customer relationships and track customer behavior.</p>
   </div>
 </section>
 
@@ -461,51 +481,73 @@ $inactiveProducts = $stmt->fetch()['inactive'];
   <!-- Stats Section -->
   <section class="stats-section">
     <div class="stat-card">
-      <i class="fas fa-box"></i>
-      <h3><?= $totalProducts ?></h3>
-      <p>Total Products</p>
+      <i class="fas fa-users"></i>
+      <h3><?= $customer_stats['total_customers'] ?? 0 ?></h3>
+      <p>Total Customers</p>
     </div>
     <div class="stat-card">
-      <i class="fas fa-check-circle"></i>
-      <h3><?= $activeProducts ?></h3>
-      <p>Active Products</p>
+      <i class="fas fa-shopping-bag"></i>
+      <h3><?= $customer_stats['total_orders'] ?? 0 ?></h3>
+      <p>Total Orders</p>
     </div>
     <div class="stat-card">
-      <i class="fas fa-pause-circle"></i>
-      <h3><?= $inactiveProducts ?></h3>
-      <p>Inactive Products</p>
+      <i class="fas fa-rupee-sign"></i>
+      <h3>Rs <?= number_format($customer_stats['total_revenue'] ?? 0, 2) ?></h3>
+      <p>Total Revenue</p>
     </div>
+    <div class="stat-card">
+      <i class="fas fa-chart-line"></i>
+      <h3>Rs <?= number_format($customer_stats['avg_order_value'] ?? 0, 2) ?></h3>
+      <p>Average Order Value</p>
+    </div>
+  </section>
+
+  <!-- Top Customers -->
+  <section class="top-customers">
+    <h3>Top Customers by Revenue</h3>
+    <?php if ($top_customers): ?>
+      <?php foreach ($top_customers as $customer): ?>
+      <div class="customer-item">
+        <div class="customer-name"><?= htmlspecialchars($customer['name']) ?></div>
+        <div class="customer-stats">
+          <div class="customer-orders"><?= $customer['orders'] ?> orders</div>
+          <div class="customer-spent">Rs <?= number_format($customer['total_spent'], 2) ?></div>
+        </div>
+      </div>
+      <?php endforeach; ?>
+    <?php else: ?>
+      <p style="text-align: center; color: #666; font-style: italic;">
+        No customer data available.
+      </p>
+    <?php endif; ?>
   </section>
 
   <!-- Search and Filters -->
   <section class="filters-section">
-    <h3>Search & Filter Products</h3>
+    <h3>Search & Filter Customers</h3>
     <form class="filters-form" method="GET">
       <div class="form-group">
-        <label for="search">Search Products</label>
+        <label for="search">Search Customers</label>
         <input type="text" id="search" name="search" class="form-control" 
-               placeholder="Search by name or description..." 
+               placeholder="Search by name or email..." 
                value="<?= htmlspecialchars($search) ?>">
       </div>
       
       <div class="form-group">
-        <label for="category">Category</label>
-        <select id="category" name="category" class="form-control">
-          <option value="">All Categories</option>
-          <?php foreach ($categories as $catKey => $catName): ?>
-            <option value="<?= $catKey ?>" <?= $category === $catKey ? 'selected' : '' ?>>
-              <?= $catName ?>
-            </option>
-          <?php endforeach; ?>
+        <label for="sort_by">Sort By</label>
+        <select id="sort_by" name="sort_by" class="form-control">
+          <option value="total_spent" <?= $sort_by === 'total_spent' ? 'selected' : '' ?>>Total Spent</option>
+          <option value="total_orders" <?= $sort_by === 'total_orders' ? 'selected' : '' ?>>Total Orders</option>
+          <option value="last_order_date" <?= $sort_by === 'last_order_date' ? 'selected' : '' ?>>Last Order Date</option>
+          <option value="avg_order_value" <?= $sort_by === 'avg_order_value' ? 'selected' : '' ?>>Average Order Value</option>
         </select>
       </div>
       
       <div class="form-group">
-        <label for="status">Status</label>
-        <select id="status" name="status" class="form-control">
-          <option value="">All Status</option>
-          <option value="1" <?= $status === '1' ? 'selected' : '' ?>>Active</option>
-          <option value="0" <?= $status === '0' ? 'selected' : '' ?>>Inactive</option>
+        <label for="sort_order">Sort Order</label>
+        <select id="sort_order" name="sort_order" class="form-control">
+          <option value="DESC" <?= $sort_order === 'DESC' ? 'selected' : '' ?>>High to Low</option>
+          <option value="ASC" <?= $sort_order === 'ASC' ? 'selected' : '' ?>>Low to High</option>
         </select>
       </div>
       
@@ -513,108 +555,71 @@ $inactiveProducts = $stmt->fetch()['inactive'];
         <button type="submit" class="btn btn-primary">
           <i class="fas fa-search"></i> Search
         </button>
-        <a href="manage-products.php" class="btn btn-secondary">
+        <a href="manage-customers.php" class="btn btn-secondary">
           <i class="fas fa-times"></i> Clear
         </a>
       </div>
     </form>
   </section>
 
-  <!-- Products Section -->
-  <section class="products-section">
-    <div class="products-header">
-      <h2>Your Products (<?= count($products) ?> found)</h2>
-      <a href="add-product.php" class="btn btn-primary">
-        <i class="fas fa-plus"></i> Add New Product
-      </a>
+  <!-- Customers Section -->
+  <section class="customers-section">
+    <div class="customers-header">
+      <h2>Customer List (<?= count($customers) ?> found)</h2>
     </div>
 
-    <!-- Success/Error Messages -->
-    <?php if (isset($_SESSION['success_message'])): ?>
-      <div class="alert alert-success">
-        <i class="fas fa-check-circle"></i>
-        <?= htmlspecialchars($_SESSION['success_message']) ?>
-      </div>
-      <?php unset($_SESSION['success_message']); ?>
-    <?php endif; ?>
-
-    <?php if (isset($_SESSION['error_message'])): ?>
-      <div class="alert alert-danger">
-        <i class="fas fa-exclamation-circle"></i>
-        <?= htmlspecialchars($_SESSION['error_message']) ?>
-      </div>
-      <?php unset($_SESSION['error_message']); ?>
-    <?php endif; ?>
-
-    <?php if ($products): ?>
+    <?php if ($customers): ?>
       <table>
         <thead>
           <tr>
-            <th>Image</th>
-            <th>Name & Category</th>
-            <th>Description</th>
-            <th>Price</th>
-            <th>Stock</th>
-            <th>Status</th>
-            <th>Created</th>
+            <th>Customer</th>
+            <th>Contact Info</th>
+            <th>Orders</th>
+            <th>Total Spent</th>
+            <th>Avg Order</th>
+            <th>Last Order</th>
+            <th>Customer Since</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          <?php foreach ($products as $product): ?>
+          <?php foreach ($customers as $customer): ?>
           <tr>
             <td>
-              <img src="image.php?file=<?php echo urlencode($product['image']); ?>" 
-                   alt="<?= htmlspecialchars($product['name']) ?>" 
-                   class="product-image">
+              <div class="customer-info">
+                <div class="customer-avatar">
+                  <?= strtoupper(substr($customer['name'], 0, 1)) ?>
+                </div>
+                <div class="customer-details">
+                  <h4><?= htmlspecialchars($customer['name']) ?></h4>
+                  <small>ID: <?= $customer['id'] ?></small>
+                </div>
+              </div>
             </td>
             <td>
-              <strong><?= htmlspecialchars($product['name']) ?></strong>
-              <br>
-              <span class="category-badge">
-                <?= htmlspecialchars($categories[$product['category']] ?? ucfirst($product['category'] ?? 'General')) ?>
+              <strong><?= htmlspecialchars($customer['email']) ?></strong>
+            </td>
+            <td>
+              <span class="status-badge status-active">
+                <?= $customer['total_orders'] ?> orders
               </span>
             </td>
             <td>
-              <?= htmlspecialchars(substr($product['description'], 0, 80)) ?>
-              <?= strlen($product['description']) > 80 ? '...' : '' ?>
-            </td>
-            <td><strong>Rs <?= number_format($product['price'], 2) ?></strong></td>
-            <td>
-              <span class="stock-amount <?= ($product['stock'] ?? 0) > 0 ? 'in-stock' : 'out-of-stock' ?>">
-                <?= $product['stock'] ?? 0 ?>
-              </span>
+              <strong>Rs <?= number_format($customer['total_spent'], 2) ?></strong>
             </td>
             <td>
-              <span class="status-badge status-<?= $product['is_active'] ? 'active' : 'inactive' ?>">
-                <?= $product['is_active'] ? 'Active' : 'Inactive' ?>
-              </span>
+              Rs <?= number_format($customer['avg_order_value'], 2) ?>
             </td>
-            <td><?= date("d M Y", strtotime($product['created_at'])) ?></td>
-            <td class="actions-cell">
-              <a href="edit-product.php?id=<?= $product['id'] ?>" 
-                 class="btn btn-edit">
-                 <i class="fas fa-edit"></i> Edit
-               </a>
-              
-              <?php if ($product['is_active']): ?>
-                <a href="toggle-status.php?id=<?= $product['id'] ?>&action=deactivate" 
-                   class="btn btn-secondary"
-                   onclick="return confirm('Deactivate this product?')">
-                   <i class="fas fa-pause"></i> Pause
-                 </a>
-              <?php else: ?>
-                <a href="toggle-status.php?id=<?= $product['id'] ?>&action=activate" 
-                   class="btn btn-success"
-                   onclick="return confirm('Activate this product?')">
-                   <i class="fas fa-play"></i> Activate
-                 </a>
-              <?php endif; ?>
-              
-              <a href="delete-product.php?id=<?= $product['id'] ?>" 
-                 class="btn btn-danger" 
-                 onclick="return confirm('Are you sure you want to delete this product? This action cannot be undone.')">
-                 <i class="fas fa-trash"></i> Delete
+            <td>
+              <?= $customer['last_order_date'] ? date("M d, Y", strtotime($customer['last_order_date'])) : 'Never' ?>
+            </td>
+            <td>
+              <?= date("M Y", strtotime($customer['customer_since'])) ?>
+            </td>
+            <td>
+              <a href="customer-details.php?id=<?= $customer['id'] ?>" 
+                 class="btn btn-info btn-sm">
+                 <i class="fas fa-eye"></i> View Details
                </a>
             </td>
           </tr>
@@ -623,9 +628,9 @@ $inactiveProducts = $stmt->fetch()['inactive'];
       </table>
     <?php else: ?>
       <div class="empty-message">
-        <i class="fas fa-box-open" style="font-size: 3rem; color: #ccc; margin-bottom: 1rem;"></i>
-        <p><?= $search || $category || $status !== '' ? 'No products found matching your criteria.' : 'You haven\'t added any products yet.' ?></p>
-        <p>Start by clicking "Add New Product" to showcase your handmade creations!</p>
+        <i class="fas fa-users" style="font-size: 3rem; color: #ccc; margin-bottom: 1rem;"></i>
+        <p><?= $search ? 'No customers found matching your criteria.' : 'No customers yet.' ?></p>
+        <p>Once customers purchase your products, they will appear here.</p>
       </div>
     <?php endif; ?>
   </section>
@@ -635,13 +640,14 @@ $inactiveProducts = $stmt->fetch()['inactive'];
   <div class="footer-container">
     <div class="footer-section">
       <h4>HandCraft</h4>
-      <p>Sell your handmade products easily and efficiently.</p>
+      <p>Build strong customer relationships for your business.</p>
     </div>
     <div class="footer-section">
       <h4>Quick Links</h4>
       <a href="../public/seller-dashboard.php">Dashboard</a>
       <a href="manage-products.php">Products</a>
-      <a href="../public/logout.php">Logout</a>
+      <a href="manage-order.php">Orders</a>
+      <a href="manage-customers.php">Customers</a>
     </div>
   </div>
   <div class="footer-bottom">
