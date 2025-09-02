@@ -101,12 +101,16 @@ try {
         // ignore
     }
 
-    header('Location: /public/product-reviews.php?product_id=' . $productId);
+    $inPublicRoot = isset($_SERVER['SCRIPT_NAME']) && (strpos($_SERVER['SCRIPT_NAME'], '/public/') !== false || basename(dirname($_SERVER['SCRIPT_NAME'])) === 'public');
+    $redirectUrl = $inPublicRoot ? 'product-reviews.php?product_id=' . $productId : '/public/product-reviews.php?product_id=' . $productId;
+    header('Location: ' . $redirectUrl);
     exit;
 } catch (PDOException $e) {
     // Handle duplicate review gracefully (unique user_id, product_id)
     if ($e->getCode() === '23000') {
-        header('Location: /public/product-reviews.php?product_id=' . $productId . '&error=already_reviewed');
+        $inPublicRoot = isset($_SERVER['SCRIPT_NAME']) && (strpos($_SERVER['SCRIPT_NAME'], '/public/') !== false || basename(dirname($_SERVER['SCRIPT_NAME'])) === 'public');
+        $redirectUrl = $inPublicRoot ? ('product-reviews.php?product_id=' . $productId . '&error=already_reviewed') : ('/public/product-reviews.php?product_id=' . $productId . '&error=already_reviewed');
+        header('Location: ' . $redirectUrl);
         exit;
     }
     error_log('Review create failed: ' . $e->getMessage());
