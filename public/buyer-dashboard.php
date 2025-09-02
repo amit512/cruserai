@@ -1775,10 +1775,60 @@ try {
                         <a href="product.php?id=<?= $product['id'] ?>" class="btn-primary">
                           <i class="fas fa-eye"></i> View
                         </a>
-                        <button class="btn-secondary" onclick="addToCart(<?= $product['id'] ?>)" title="Add to Cart">
-                          <i class="fas fa-cart-plus"></i>
+                        <button class="btn-secondary" 
+        data-id="<?= $product['id'] ?>" 
+        onclick="addToCart(<?= $product['id'] ?>)" 
+        title="Add to Cart">
+  <i class="fas fa-cart-plus"></i>
                         </button>
-                        <button class="btn-secondary" onclick="addToWishlist(<?= $product['id'] ?>)" title="Add to Wishlist" style="background: #E91E63;">
+                        <style>
+                          button.btn-secondary.added {
+  background-color: #28a745; /* green */
+  color: white;
+  border-color: #28a745;
+}
+
+button.btn-secondary {
+  transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+}
+
+                        </style>
+                        <script>
+function addToCart(productId) {
+  console.log("Clicked Add to Cart, productId:", productId);
+
+  // find the clicked button
+  let btn = document.querySelector(`button[data-id='${productId}']`);
+
+  fetch('add_to_cart.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ product_id: productId, quantity: 1 })
+  })
+  .then(response => response.text())
+  .then(data => {
+    console.log("Raw response:", data); 
+    try {
+      let json = JSON.parse(data);
+      if (json.success) {
+        if (btn) {
+          btn.classList.add("added");  // light up
+        }
+      } else {
+        console.error("Add to cart failed:", json.message);
+      }
+    } catch (e) {
+      console.error("Invalid JSON:", e);
+    }
+  })
+  .catch(error => {
+    console.error("Fetch error:", error);
+  });
+}
+</script>
+
+
+                        <button class="btn-secondary"  data-product-id="<?= $product['id'] ?>" onclick="addToWishlist(this)" title="Add to Wishlist" style="background: #E91E63;">
                           <i class="fas fa-heart"></i>
                         </button>
                       </div>
@@ -2098,61 +2148,12 @@ try {
   <?php include __DIR__ . '/../includes/footer.php'; ?>
 
   <script>
-    function addToCart(productId) {
-      // Add to cart functionality
-      fetch('add_to_cart.php', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          product_id: productId,
-          quantity: 1
-        })
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (data.success) {
-          showNotification('Product added to cart!', 'success');
-          // Update cart count
-          location.reload();
-        } else {
-          showNotification('Error adding product to cart: ' + data.message, 'error');
-        }
-      })
-      .catch(error => {
-        console.error('Error:', error);
-        showNotification('Error adding product to cart', 'error');
-      });
-    }
+   
     
-    function addToWishlist(productId) {
-      // Add to wishlist functionality
-      fetch('add_to_wishlist.php', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          product_id: productId
-        })
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (data.success) {
-          showNotification('Product added to wishlist!', 'success');
-          // Update wishlist count
-          location.reload();
-        } else {
-          showNotification('Error adding product to wishlist: ' + data.message, 'error');
-        }
-      })
-      .catch(error => {
-        console.error('Error:', error);
-        showNotification('Error adding product to wishlist', 'error');
-      });
-    }
-    
+ 
+
+
+
     function showNotification(message, type) {
       // Create notification element
       const notification = document.createElement('div');

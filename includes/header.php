@@ -259,6 +259,11 @@ function isActive($page) {
                 </li>
                 
             <?php endif; ?>
+            <?php if ($role === 'seller'): ?>
+            <li><a href="../app/manage-products.php">Products</a></li>
+
+             <li><a href="../app/manage-order.php">Orders</a></li>
+             <?php endif; ?>
         </ul>
     </nav>
 
