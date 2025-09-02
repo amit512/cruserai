@@ -119,7 +119,7 @@ $summary = Product::getRatingSummary($product['id']);
                 <?php if (!$user || !is_buyer()): ?>
                     <p class="muted">Please <a href="login.php">log in</a> as a buyer to write a review.</p>
                 <?php else: ?>
-                    <form action="../actions/review_create.php" method="post" enctype="multipart/form-data">
+                    <form action="review_create.php" method="post" enctype="multipart/form-data">
                         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(csrf_token()) ?>">
                         <input type="hidden" name="product_id" value="<?= (int)$product['id'] ?>">
                         <?php if (isset($_GET['order_id'])): ?>
