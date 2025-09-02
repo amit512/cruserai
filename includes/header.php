@@ -257,20 +257,23 @@ function isActive($page) {
                         Dashboard
                     </a>
                 </li>
-                
             <?php endif; ?>
-            <?php if ($role === 'seller'): ?>
-            <li><a href="../app/manage-products.php">Products</a></li>
 
-             <li><a href="../app/manage-order.php">Orders</a></li>
-             <?php endif; ?>
+            <?php if ($role === 'seller'): ?>
+                <li><a href="../app/manage-products.php">Products</a></li>
+                <li><a href="../app/manage-order.php">Orders</a></li>
+                <li><a href="seller-payment.php" class="<?= isActive('seller-payment.php') ?>">Payments</a></li>
+            <?php endif; ?>
+
+            <?php if ($role === 'admin'): ?>
+                <li><a href="../admin/billing.php" class="<?= isActive('billing.php') ?>">Billing</a></li>
+            <?php endif; ?>
         </ul>
     </nav>
 
     <div class="header-icons">
         <?php if ($user): ?>
             <span class="welcome">Hello, <?= e($user['name']) ?></span>
-            
             <?php if ($role === 'buyer'): ?>
                 <a href="wishlist.php" class="btn wishlist" title="My Wishlist">
                     <i class="fas fa-heart"></i> Wishlist
@@ -278,9 +281,7 @@ function isActive($page) {
                 <a href="cart.php" class="btn cart" title="Shopping Cart">
                     <i class="fas fa-shopping-cart"></i> Cart
                 </a>
-                
             <?php endif; ?>
-            
             <a href="logout.php" class="btn logout">Logout</a>
         <?php else: ?>
             <a href="login.php" class="btn login">Login</a>
