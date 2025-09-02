@@ -596,6 +596,11 @@ $allCategories = get_categories();
     </div>
 
         <div class="container">
+            <?php if (isset($_GET['error']) && $_GET['error'] === 'seller_frozen'): ?>
+                <div style="background:#fff3cd;color:#856404;padding:1rem;border-radius:8px;margin:1rem 0;border:1px solid #ffeeba;">
+                    The seller for a product you tried to add is temporarily unavailable. Please try again later or choose another product.
+                </div>
+            <?php endif; ?>
             <div class="catalog-layout">
                 <!-- Sidebar Filters -->
                 <aside class="catalog-sidebar">
