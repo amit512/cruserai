@@ -99,7 +99,7 @@ $summary = Product::getRatingSummary($product['id']);
                             <?php if (!empty($r['review'])): ?>
                                 <div><?= nl2br(htmlspecialchars($r['review'])) ?></div>
                             <?php endif; ?>
-                            <?php if (!empty($r['images'])): ?>
+                            <?php if (array_key_exists('images', $r) && !empty($r['images'])): ?>
                                 <?php $imgs = @json_decode($r['images'], true) ?: []; ?>
                                 <?php if ($imgs): ?>
                                     <div class="media-grid">

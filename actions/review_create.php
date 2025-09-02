@@ -66,11 +66,31 @@ try {
 
     $imagesJson = $uploaded ? json_encode($uploaded) : null;
 
-    // Ensure product_reviews exists
+    // Ensure product_reviews exists (no-op if already there)
     Product::ensureProductReviewsSchema();
-    // Insert into product_reviews
-    $stmt = Database::pdo()->prepare("INSERT INTO product_reviews (product_id, user_id, rating, comment, images) VALUES (?, ?, ?, ?, ?)");
-    $stmt->execute([$productId, $userId, $rating, $comment, $imagesJson]);
+
+    // Detect or add images column if missing
+    $hasImagesColumn = false;
+    try {
+        Database::pdo()->query("SELECT images FROM product_reviews LIMIT 1");
+        $hasImagesColumn = true;
+    } catch (Exception $e) {
+        try {
+            Database::pdo()->exec("ALTER TABLE product_reviews ADD COLUMN images JSON NULL");
+            $hasImagesColumn = true;
+        } catch (Exception $e2) {
+            $hasImagesColumn = false;
+        }
+    }
+
+    // Insert into product_reviews with or without images based on schema
+    if ($hasImagesColumn) {
+        $stmt = Database::pdo()->prepare("INSERT INTO product_reviews (product_id, user_id, rating, comment, images) VALUES (?, ?, ?, ?, ?)");
+        $stmt->execute([$productId, $userId, $rating, $comment, $imagesJson]);
+    } else {
+        $stmt = Database::pdo()->prepare("INSERT INTO product_reviews (product_id, user_id, rating, comment) VALUES (?, ?, ?, ?)");
+        $stmt->execute([$productId, $userId, $rating, $comment]);
+    }
 
     // Optional: update product_performance if table exists
     try {
@@ -83,6 +103,15 @@ try {
 
     header('Location: /public/product-reviews.php?product_id=' . $productId);
     exit;
+} catch (PDOException $e) {
+    // Handle duplicate review gracefully (unique user_id, product_id)
+    if ($e->getCode() === '23000') {
+        header('Location: /public/product-reviews.php?product_id=' . $productId . '&error=already_reviewed');
+        exit;
+    }
+    error_log('Review create failed: ' . $e->getMessage());
+    http_response_code(500);
+    echo 'Failed to submit review.';
 } catch (Exception $e) {
     error_log('Review create failed: ' . $e->getMessage());
     http_response_code(500);
