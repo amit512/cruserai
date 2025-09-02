@@ -6,6 +6,18 @@ if (empty($_SESSION['user']) || ($_SESSION['user']['role'] ?? '') !== 'seller') 
     http_response_code(403); die('Forbidden');
 }
 
+// Server-side freeze enforcement
+try {
+    $pdo = db();
+    $stmt = $pdo->prepare("SELECT is_frozen FROM seller_accounts WHERE seller_id = ?");
+    $stmt->execute([ (int)$_SESSION['user']['id'] ]);
+    $acc = $stmt->fetch();
+    if ($acc && (int)$acc['is_frozen'] === 1) {
+        http_response_code(403);
+        die('Account frozen. Please clear dues.');
+    }
+} catch (Exception $e) {}
+
 $title = trim($_POST['title'] ?? '');
 $description = trim($_POST['description'] ?? '');
 $price = (float) ($_POST['price'] ?? 0);
