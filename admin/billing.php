@@ -93,9 +93,27 @@ foreach ($sellers as $s) {
     .badge { padding: 2px 8px; border-radius: 12px; font-size: 12px; }
   </style>
   </head>
-<body class="bg-gray-100 p-8">
-  <div class="max-w-6xl mx-auto">
-    <h1 class="text-2xl font-bold mb-6">Admin Billing</h1>
+<body class="bg-gray-100 flex">
+  <!-- Sidebar -->
+  <aside class="w-64 bg-white shadow-lg h-screen p-6">
+    <h1 class="text-2xl font-bold text-indigo-600 mb-6">HomeCraft Admin</h1>
+    <nav class="space-y-4">
+      <a href="admin-dashboard.php" class="block text-gray-700 font-medium hover:text-indigo-600">📊 Dashboard</a>
+      <a href="manage-orders.php" class="block text-gray-700 font-medium hover:text-indigo-600">📦 Orders</a>
+      <a href="manage-products.php" class="block text-gray-700 font-medium hover:text-indigo-600">🛒 Products</a>
+      <a href="manage-users.php" class="block text-gray-700 font-medium hover:text-indigo-600">👤 Customers</a>
+      <a href="billing.php" class="block text-indigo-600 font-semibold">💳 Billing</a>
+      <a href="../public/logout.php" class="block text-red-600 font-medium hover:text-red-800 mt-6">🚪 Logout</a>
+    </nav>
+    <div class="mt-10 flex items-center space-x-3">
+      <img src="assets/img/admin-avatar.png" class="w-10 h-10 rounded-full border" alt="Admin">
+      <span class="font-semibold"><?= htmlspecialchars($_SESSION['user']['name'] ?? 'Admin', ENT_QUOTES) ?></span>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="flex-1 p-8 overflow-y-auto">
+    <h2 class="text-3xl font-bold mb-6">Billing</h2>
     <div class="bg-white rounded-xl shadow p-4 overflow-x-auto">
       <table class="min-w-full text-sm">
         <thead class="bg-gray-100">
@@ -160,7 +178,7 @@ foreach ($sellers as $s) {
         </tbody>
       </table>
     </div>
-  </div>
+  </main>
 </body>
 </html>
 
