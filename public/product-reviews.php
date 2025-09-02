@@ -141,20 +141,7 @@ $summary = Product::getRatingSummary($product['id']);
                                 </div>
                             <?php endif; ?>
 
-                            <?php if ($user): ?>
-                                <form action="review_comment_create.php" method="post" style="margin-top:.75rem;">
-                                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(csrf_token()) ?>">
-                                    <input type="hidden" name="product_id" value="<?= (int)$product['id'] ?>">
-                                    <input type="hidden" name="review_id" value="<?= (int)$r['id'] ?>">
-                                    <div class="form-row" style="margin-bottom:.5rem;">
-                                        <label for="comment_<?= (int)$r['id'] ?>" class="muted" style="margin-bottom:.25rem;">Add a comment</label>
-                                        <textarea id="comment_<?= (int)$r['id'] ?>" name="comment" rows="2" placeholder="Write a reply..." required></textarea>
-                                    </div>
-                                    <button class="btn secondary" type="submit" style="padding:.4rem .8rem;">Post</button>
-                                </form>
-                            <?php else: ?>
-                                <div class="muted" style="margin-top:.5rem;">Log in to comment.</div>
-                            <?php endif; ?>
+                            <!-- Comment view only; submission disabled as requested -->
                         </div>
                     <?php endforeach; ?>
                 <?php endif; ?>
