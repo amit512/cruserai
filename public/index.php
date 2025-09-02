@@ -561,6 +561,13 @@ if ($searchQuery) {
                             <div class="product-info">
                                 <h3><?= htmlspecialchars($product['name']) ?></h3>
                                 <p class="seller-name">by <?= htmlspecialchars($product['seller_name']) ?></p>
+                                <?php $sum = Product::getRatingSummary((int)$product['id']); $filled = (int)round($sum['avg']); ?>
+                                <div class="seller-name" style="color:#f5a623;">
+                                    <?php for ($i=1; $i<=5; $i++): ?>
+                                        <?php if ($i <= $filled): ?><i class="fas fa-star"></i><?php else: ?><i class="far fa-star"></i><?php endif; ?>
+                                    <?php endfor; ?>
+                                    <span style="color:#666; margin-left:.25rem;">(<?= (int)$sum['count'] ?>)</span>
+                                </div>
                                 <div class="product-price"><?= format_price($product['price']) ?></div>
                                 <p class="product-description"><?= truncate_text($product['description']) ?></p>
                                 <a href="product.php?id=<?= $product['id'] ?>" class="view-product-btn">View Product</a>
@@ -592,6 +599,13 @@ if ($searchQuery) {
                             <div class="product-info">
                                 <h3><?= htmlspecialchars($product['name']) ?></h3>
                                 <p class="seller-name">by <?= htmlspecialchars($product['seller_name']) ?></p>
+                                <?php $sum = Product::getRatingSummary((int)$product['id']); $filled = (int)round($sum['avg']); ?>
+                                <div class="seller-name" style="color:#f5a623;">
+                                    <?php for ($i=1; $i<=5; $i++): ?>
+                                        <?php if ($i <= $filled): ?><i class="fas fa-star"></i><?php else: ?><i class="far fa-star"></i><?php endif; ?>
+                                    <?php endfor; ?>
+                                    <span style="color:#666; margin-left:.25rem;">(<?= (int)$sum['count'] ?>)</span>
+                                </div>
                                 <div class="product-price"><?= format_price($product['price']) ?></div>
                                 <p class="product-description"><?= truncate_text($product['description']) ?></p>
                                 <a href="product.php?id=<?= $product['id'] ?>" class="view-product-btn">View Product</a>

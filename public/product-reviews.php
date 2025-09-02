@@ -21,19 +21,10 @@ if (!$product) {
     exit;
 }
 
-// Fetch existing reviews (customer_feedback joined by order to buyer if needed)
-$reviews = [];
-try {
-    $stmt = Database::pdo()->prepare("SELECT cf.*, u.name AS customer_name
-        FROM customer_feedback cf
-        JOIN users u ON u.id = cf.customer_id
-        WHERE cf.seller_id = ? AND cf.is_public = 1
-        ORDER BY cf.created_at DESC");
-    $stmt->execute([$product['seller_id']]);
-    $reviews = $stmt->fetchAll();
-} catch (Exception $e) {
-    error_log('Failed to fetch reviews: ' . $e->getMessage());
-}
+// Fetch product-specific reviews
+$reviews = Product::getProductReviews($product['id'], 100, 0);
+// Rating summary
+$summary = Product::getRatingSummary($product['id']);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -81,6 +72,9 @@ try {
             <div>
                 <div><a href="product.php?id=<?= (int)$product['id'] ?>" class="muted">Back to product</a></div>
                 <div class="muted">Category: <?= htmlspecialchars(ucfirst($product['category'])) ?> • Seller: <?= htmlspecialchars($product['seller_name']) ?></div>
+                <div class="muted" style="margin-top:.25rem;">
+                    Average Rating: <?= number_format($summary['avg'], 1) ?> / 5 (<?= (int)$summary['count'] ?>)
+                </div>
             </div>
         </div>
 
@@ -128,6 +122,9 @@ try {
                     <form action="../actions/review_create.php" method="post" enctype="multipart/form-data">
                         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(csrf_token()) ?>">
                         <input type="hidden" name="product_id" value="<?= (int)$product['id'] ?>">
+                        <?php if (isset($_GET['order_id'])): ?>
+                            <input type="hidden" name="order_id" value="<?= (int)$_GET['order_id'] ?>">
+                        <?php endif; ?>
                         <div class="form-row">
                             <label for="rating">Rating</label>
                             <select id="rating" name="rating" required>

@@ -14,6 +14,7 @@ if (!isset($_SESSION['user']) || !is_buyer()) {
 
 $userId = (int) $_SESSION['user']['id'];
 $productId = isset($_POST['product_id']) ? (int) $_POST['product_id'] : 0;
+$orderId = isset($_POST['order_id']) ? (int) $_POST['order_id'] : 0;
 $rating = isset($_POST['rating']) ? (int) $_POST['rating'] : 0;
 $comment = trim($_POST['comment'] ?? '');
 
@@ -28,7 +29,19 @@ try {
         throw new Exception('Product not found');
     }
 
-    // Optional: ensure buyer purchased the product. Skipping due to unknown schema.
+    // Ensure buyer purchased the product
+    $purchased = false;
+    try {
+        $stmt = Database::pdo()->prepare("SELECT COUNT(*) FROM orders WHERE buyer_id = ? AND product_id = ? AND status IN ('Delivered','Shipped','Pending')");
+        $stmt->execute([$userId, $productId]);
+        $purchased = ((int)$stmt->fetchColumn()) > 0;
+    } catch (Exception $e) {
+        $purchased = false;
+    }
+    if (!$purchased) {
+        http_response_code(403);
+        die('You can only review products you purchased.');
+    }
 
     // Handle image uploads (optional)
     $uploaded = [];
@@ -53,23 +66,19 @@ try {
 
     $imagesJson = $uploaded ? json_encode($uploaded) : null;
 
-    // Insert into customer_feedback (seller-level). If you prefer per-product, create product_reviews.
-    $stmt = Database::pdo()->prepare("INSERT INTO customer_feedback (customer_id, seller_id, order_id, rating, review, is_public) VALUES (?, ?, ?, ?, ?, 1)");
-    $orderId = null; // unknown without schema linkage
-    $stmt->execute([$userId, (int)$product['seller_id'], $orderId, $rating, $comment]);
+    // Ensure product_reviews exists
+    Product::ensureProductReviewsSchema();
+    // Insert into product_reviews
+    $stmt = Database::pdo()->prepare("INSERT INTO product_reviews (product_id, user_id, rating, comment, images) VALUES (?, ?, ?, ?, ?)");
+    $stmt->execute([$productId, $userId, $rating, $comment, $imagesJson]);
 
-    // If images were uploaded, attempt to store in an images column if present
+    // Optional: update product_performance if table exists
     try {
-        if ($imagesJson) {
-            Database::pdo()->prepare("ALTER TABLE customer_feedback ADD COLUMN images JSON NULL")->execute();
-        }
+        Database::pdo()->prepare("UPDATE product_performance SET total_reviews = total_reviews + 1, average_rating = (
+            SELECT COALESCE(AVG(rating),0) FROM product_reviews WHERE product_id = ?
+        ) WHERE product_id = ?")->execute([$productId, $productId]);
     } catch (Exception $e) {
-        // Column may already exist
-    }
-    if ($imagesJson) {
-        $feedbackId = (int) Database::pdo()->lastInsertId();
-        $upd = Database::pdo()->prepare("UPDATE customer_feedback SET images = ? WHERE id = ?");
-        $upd->execute([$imagesJson, $feedbackId]);
+        // ignore
     }
 
     header('Location: /public/product-reviews.php?product_id=' . $productId);

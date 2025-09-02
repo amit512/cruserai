@@ -14,6 +14,12 @@ try {
     $product = null;
 }
 
+// Rating summary
+$ratingSummary = ['avg' => 0, 'count' => 0];
+if ($product) {
+    $ratingSummary = Product::getRatingSummary((int)$product['id']);
+}
+
 if (!$product) {
     http_response_code(404);
     echo "<h1>Product Not Found</h1>";
@@ -230,6 +236,15 @@ if (!$product) {
             <!-- Product Information -->
             <div class="product-info-section">
                 <h1 class="product-title"><?= htmlspecialchars($product['name']) ?></h1>
+                <div class="muted" style="margin: .25rem 0 1rem 0; color:#f5a623;">
+                    <?php
+                        $filled = (int)round($ratingSummary['avg']);
+                        for ($i=1; $i<=5; $i++) {
+                            echo $i <= $filled ? '<i class="fas fa-star"></i>' : '<i class="far fa-star"></i>';
+                        }
+                    ?>
+                    <span style="color:#666; margin-left:.5rem;">(<?= (int)$ratingSummary['count'] ?>)</span>
+                </div>
                 <div class="product-price"><?= format_price($product['price']) ?></div>
                 <p class="product-description"><?= htmlspecialchars($product['description']) ?></p>
                 
