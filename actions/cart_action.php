@@ -62,15 +62,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         }
         
-        // Check if product exists and is active
-        $stmt = $pdo->prepare("SELECT stock FROM products WHERE id = ? AND is_active = 1");
+        // Check if product exists, is active, and seller not frozen
+        $stmt = $pdo->prepare("SELECT p.stock, p.seller_id FROM products p WHERE p.id = ? AND p.is_active = 1");
         $stmt->execute([$productId]);
-        $stock = $stmt->fetchColumn();
-        
-        if (!$stock) {
+        $row = $stmt->fetch();
+        if (!$row) {
             header('Location: ../public/catalog.php?error=product_not_found');
             exit;
         }
+        $stock = $row['stock'];
+        // seller freeze check
+        try {
+            $sf = $pdo->prepare("SELECT is_frozen FROM seller_accounts WHERE seller_id = ?");
+            $sf->execute([(int)$row['seller_id']]);
+            $acc = $sf->fetch();
+            if ($acc && (int)$acc['is_frozen'] === 1) {
+                header('Location: ../public/catalog.php?error=seller_frozen');
+                exit;
+            }
+        } catch (Exception $e) {}
         
         if ($quantity > $stock) {
             header('Location: ../public/catalog.php?error=insufficient_stock');
