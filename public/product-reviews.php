@@ -109,6 +109,52 @@ $summary = Product::getRatingSummary($product['id']);
                                     </div>
                                 <?php endif; ?>
                             <?php endif; ?>
+
+                            <?php
+                                // Load comments for this review
+                                $comments = [];
+                                try {
+                                    // Ensure table exists
+                                    Database::pdo()->exec("CREATE TABLE IF NOT EXISTS review_comments (
+                                        id INT AUTO_INCREMENT PRIMARY KEY,
+                                        review_id INT NOT NULL,
+                                        user_id INT NOT NULL,
+                                        comment TEXT NOT NULL,
+                                        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                        INDEX idx_review_id (review_id)
+                                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
+                                    $stmtC = Database::pdo()->prepare("SELECT rc.*, u.name AS user_name FROM review_comments rc JOIN users u ON rc.user_id = u.id WHERE rc.review_id = ? ORDER BY rc.created_at ASC");
+                                    $stmtC->execute([$r['id']]);
+                                    $comments = $stmtC->fetchAll();
+                                } catch (Exception $e) { $comments = []; }
+                            ?>
+
+                            <?php if (!empty($comments)): ?>
+                                <div style="margin-top:.75rem; padding-left:.5rem; border-left:3px solid #eee;">
+                                    <?php foreach ($comments as $c): ?>
+                                        <div class="muted" style="margin:.35rem 0;">
+                                            <strong><?= htmlspecialchars($c['user_name']) ?>:</strong>
+                                            <?= nl2br(htmlspecialchars($c['comment'])) ?>
+                                            <span style="color:#999;"> • <?= date('M j, Y g:i A', strtotime($c['created_at'])) ?></span>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php endif; ?>
+
+                            <?php if ($user): ?>
+                                <form action="review_comment_create.php" method="post" style="margin-top:.75rem;">
+                                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(csrf_token()) ?>">
+                                    <input type="hidden" name="product_id" value="<?= (int)$product['id'] ?>">
+                                    <input type="hidden" name="review_id" value="<?= (int)$r['id'] ?>">
+                                    <div class="form-row" style="margin-bottom:.5rem;">
+                                        <label for="comment_<?= (int)$r['id'] ?>" class="muted" style="margin-bottom:.25rem;">Add a comment</label>
+                                        <textarea id="comment_<?= (int)$r['id'] ?>" name="comment" rows="2" placeholder="Write a reply..." required></textarea>
+                                    </div>
+                                    <button class="btn secondary" type="submit" style="padding:.4rem .8rem;">Post</button>
+                                </form>
+                            <?php else: ?>
+                                <div class="muted" style="margin-top:.5rem;">Log in to comment.</div>
+                            <?php endif; ?>
                         </div>
                     <?php endforeach; ?>
                 <?php endif; ?>
