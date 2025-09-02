@@ -29,7 +29,7 @@ try {
     $pendingOrders  = (int) $pdo->query("SELECT COUNT(*) FROM orders WHERE status='Pending'")->fetchColumn();
     $completedOrders= (int) $pdo->query("SELECT COUNT(*) FROM orders WHERE status='Delivered'")->fetchColumn();
     $cancelledOrders= (int) $pdo->query("SELECT COUNT(*) FROM orders WHERE status='Cancelled'")->fetchColumn();
-    $totalRevenue   = (float) $pdo->query("SELECT IFNULL(SUM(total),0) FROM orders WHERE status='Delivered'")->fetchColumn();
+    $totalRevenue   = (float) $pdo->query("SELECT IFNULL(SUM(total)*0.05,0) FROM orders WHERE status='Delivered'")->fetchColumn();
 
     // recent
     $recentUsers = $pdo->query("SELECT id, name, email, role, created_at FROM users ORDER BY created_at DESC LIMIT 5")->fetchAll(PDO::FETCH_ASSOC);
@@ -42,7 +42,7 @@ try {
                                  ORDER BY o.created_at DESC LIMIT 5")->fetchAll(PDO::FETCH_ASSOC);
 
     // revenue trend for chart (last 7 days)
-    $stmt = $pdo->query("SELECT DATE(created_at) as day, SUM(total) as revenue 
+    $stmt = $pdo->query("SELECT DATE(created_at) as day, SUM(total)*0.05 as revenue 
                          FROM orders 
                          WHERE status='Delivered' 
                          GROUP BY DATE(created_at) 
