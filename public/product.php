@@ -267,6 +267,10 @@ if (!$product) {
                         <i class="fas fa-th-large"></i> View Similar
                     </a>
                     
+                    <a href="product-reviews.php?product_id=<?= (int)$product['id'] ?>" class="btn-outline">
+                        <i class="fas fa-star"></i> See Reviews
+                    </a>
+                    
                     <a href="catalog.php" class="btn-outline">
                         <i class="fas fa-arrow-left"></i> Back to Catalog
                     </a>
