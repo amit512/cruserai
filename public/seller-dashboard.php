@@ -748,6 +748,7 @@ $orders = $stmt->fetchAll();
   </nav>
   <div class="header-icons">
     <span class="welcome">Hello, <?= htmlspecialchars($user['name']) ?></span>
+    <a href="seller-payment.php" class="btn orders">Payments</a>
     <a href="logout.php" class="btn logout">Logout</a>
   </div>
 </header>
