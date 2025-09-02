@@ -596,6 +596,11 @@ $allCategories = get_categories();
     </div>
 
         <div class="container">
+            <?php if (isset($_GET['error']) && $_GET['error'] === 'seller_frozen'): ?>
+                <div style="background:#fff3cd;color:#856404;padding:1rem;border-radius:8px;margin:1rem 0;border:1px solid #ffeeba;">
+                    The seller for a product you tried to add is temporarily unavailable. Please try again later or choose another product.
+                </div>
+            <?php endif; ?>
             <div class="catalog-layout">
                 <!-- Sidebar Filters -->
                 <aside class="catalog-sidebar">
@@ -711,6 +716,13 @@ $allCategories = get_categories();
                                     <div class="product-info">
                                         <h3><?= htmlspecialchars($product['name']) ?></h3>
                                         <p class="seller-name">by <?= htmlspecialchars($product['seller_name']) ?></p>
+                                        <?php $sum = Product::getRatingSummary((int)$product['id']); $filled = (int)round($sum['avg']); ?>
+                                        <div class="seller-name" style="color:#f5a623;">
+                                            <?php for ($i=1; $i<=5; $i++): ?>
+                                                <?php if ($i <= $filled): ?><i class="fas fa-star"></i><?php else: ?><i class="far fa-star"></i><?php endif; ?>
+                                            <?php endfor; ?>
+                                            <span style="color:#666; margin-left:.25rem;">(<?= (int)$sum['count'] ?>)</span>
+                                        </div>
                                         <div class="product-price"><?= format_price($product['price']) ?></div>
                                         <p class="product-description"><?= truncate_text($product['description']) ?></p>
                                         <div class="product-actions">

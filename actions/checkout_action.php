@@ -51,8 +51,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             $pdo->beginTransaction();
             
-            // Create orders for each cart item
+            // Create orders for each cart item (block frozen sellers)
             foreach ($cartItems as $item) {
+                // seller freeze check
+                try {
+                    $sf = $pdo->prepare("SELECT is_frozen FROM seller_accounts WHERE seller_id = ?");
+                    $sf->execute([$item['seller_id']]);
+                    $acc = $sf->fetch();
+                    if ($acc && (int)$acc['is_frozen'] === 1) {
+                        throw new Exception('Seller account is frozen for product ' . $item['name']);
+                    }
+                } catch (Exception $e) {
+                    throw $e;
+                }
                 $stmt = $pdo->prepare("
                     INSERT INTO orders (buyer_id, seller_id, product_id, quantity, total, status, created_at)
                     VALUES (?, ?, ?, ?, ?, 'Pending', NOW())

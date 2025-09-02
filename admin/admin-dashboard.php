@@ -2,8 +2,12 @@
 // admin-dashboard.php
 session_start();
 require_once __DIR__ . '/../config/config.php';
+require_once __DIR__ . '/../app/Database.php';
 
-
+if (!isset($_SESSION['user']) || ($_SESSION['user']['role'] ?? '') !== 'admin') {
+    header('Location: ../public/login.php');
+    exit;
+}
 
 $pdo = db();
 
@@ -22,10 +26,10 @@ try {
     $totalBuyers    = (int) $pdo->query("SELECT COUNT(*) FROM users WHERE role='buyer'")->fetchColumn();
     $totalProducts  = (int) $pdo->query("SELECT COUNT(*) FROM products")->fetchColumn();
     $totalOrders    = (int) $pdo->query("SELECT COUNT(*) FROM orders")->fetchColumn();
-    $pendingOrders  = (int) $pdo->query("SELECT COUNT(*) FROM orders WHERE status='pending'")->fetchColumn();
-    $completedOrders= (int) $pdo->query("SELECT COUNT(*) FROM orders WHERE status='completed'")->fetchColumn();
-    $cancelledOrders= (int) $pdo->query("SELECT COUNT(*) FROM orders WHERE status='cancelled'")->fetchColumn();
-    $totalRevenue   = (float) $pdo->query("SELECT IFNULL(SUM(total),0) FROM orders WHERE status='completed'")->fetchColumn();
+    $pendingOrders  = (int) $pdo->query("SELECT COUNT(*) FROM orders WHERE status='Pending'")->fetchColumn();
+    $completedOrders= (int) $pdo->query("SELECT COUNT(*) FROM orders WHERE status='Delivered'")->fetchColumn();
+    $cancelledOrders= (int) $pdo->query("SELECT COUNT(*) FROM orders WHERE status='Cancelled'")->fetchColumn();
+    $totalRevenue   = (float) $pdo->query("SELECT IFNULL(SUM(total)*0.05,0) FROM orders WHERE status='Delivered'")->fetchColumn();
 
     // recent
     $recentUsers = $pdo->query("SELECT id, name, email, role, created_at FROM users ORDER BY created_at DESC LIMIT 5")->fetchAll(PDO::FETCH_ASSOC);
@@ -38,12 +42,46 @@ try {
                                  ORDER BY o.created_at DESC LIMIT 5")->fetchAll(PDO::FETCH_ASSOC);
 
     // revenue trend for chart (last 7 days)
-    $stmt = $pdo->query("SELECT DATE(created_at) as day, SUM(total) as revenue 
+    $stmt = $pdo->query("SELECT DATE(created_at) as day, SUM(total)*0.05 as revenue 
                          FROM orders 
-                         WHERE status='completed' 
+                         WHERE status='Delivered' 
                          GROUP BY DATE(created_at) 
                          ORDER BY day DESC LIMIT 7");
     $chartData = array_reverse($stmt->fetchAll(PDO::FETCH_ASSOC));
+
+    // Recent Reviews and Top Rated panels
+    try {
+        $pdo->exec("CREATE TABLE IF NOT EXISTS product_reviews (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            product_id INT NOT NULL,
+            user_id INT NOT NULL,
+            rating TINYINT NOT NULL,
+            comment TEXT NULL,
+            images JSON NULL,
+            created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            INDEX idx_product_id (product_id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
+    } catch (Exception $e) {}
+
+    $recentReviews = [];
+    try {
+        $recentReviews = $pdo->query("SELECT pr.id, pr.product_id, p.name AS product_name, pr.rating, pr.comment, pr.created_at, u.name AS user_name
+                                      FROM product_reviews pr 
+                                      JOIN products p ON pr.product_id = p.id
+                                      JOIN users u ON pr.user_id = u.id
+                                      ORDER BY pr.created_at DESC LIMIT 5")->fetchAll(PDO::FETCH_ASSOC);
+    } catch (Exception $e) { $recentReviews = []; }
+
+    $topRated = [];
+    try {
+        $topRated = $pdo->query("SELECT p.id, p.name, AVG(pr.rating) as avg_rating, COUNT(pr.id) as reviews
+                                  FROM product_reviews pr
+                                  JOIN products p ON pr.product_id = p.id
+                                  GROUP BY pr.product_id, p.name
+                                  HAVING reviews >= 3
+                                  ORDER BY avg_rating DESC, reviews DESC
+                                  LIMIT 5")->fetchAll(PDO::FETCH_ASSOC);
+    } catch (Exception $e) { $topRated = []; }
 
 } catch (PDOException $ex) {
     die("Database error: " . $ex->getMessage());
@@ -67,6 +105,7 @@ try {
       <a href="manage-orders.php" class="block text-gray-700 font-medium hover:text-indigo-600">📦 Orders</a>
       <a href="manage-products.php" class="block text-gray-700 font-medium hover:text-indigo-600">🛒 Products</a>
       <a href="manage-users.php" class="block text-gray-700 font-medium hover:text-indigo-600">👤 Customers</a>
+      <a href="billing.php" class="block text-gray-700 font-medium hover:text-indigo-600">💳 Billing</a>
       <a href="../public/logout.php" class="block text-red-600 font-medium hover:text-red-800 mt-6">🚪 Logout</a>
 
     </nav>
@@ -153,6 +192,32 @@ try {
       </table>
     </section>
 
+    <!-- Top Rated Products -->
+    <section class="bg-white p-6 rounded-xl shadow mb-10">
+      <h3 class="text-xl font-semibold mb-4">Top Rated Products</h3>
+      <table class="min-w-full border border-gray-200 rounded-lg text-sm">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="p-2 border">Product</th>
+            <th class="p-2 border">Avg Rating</th>
+            <th class="p-2 border">Reviews</th>
+          </tr>
+        </thead>
+        <tbody>
+        <?php foreach ($topRated as $t): ?>
+          <tr class="hover:bg-gray-50">
+            <td class="p-2 border"><?= e($t['name'] ?? $t['product_name'] ?? ('Product #' . ($t['id'] ?? ''))) ?></td>
+            <td class="p-2 border"><?= number_format((float)$t['avg_rating'], 1) ?> / 5</td>
+            <td class="p-2 border"><?= (int)$t['reviews'] ?></td>
+          </tr>
+        <?php endforeach; ?>
+        <?php if (empty($topRated)): ?>
+          <tr><td colspan="3" class="p-3 text-center text-gray-500">No rating data yet.</td></tr>
+        <?php endif; ?>
+        </tbody>
+      </table>
+    </section>
+
     <!-- Recent Products -->
     <section class="bg-white p-6 rounded-xl shadow mb-10">
       <h3 class="text-xl font-semibold mb-4">Recent Products</h3>
@@ -207,6 +272,38 @@ try {
             <td class="p-2 border"><?= e($o['created_at']) ?></td>
           </tr>
         <?php endforeach; ?>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Recent Reviews -->
+    <section class="bg-white p-6 rounded-xl shadow mt-10">
+      <h3 class="text-xl font-semibold mb-4">Recent Reviews</h3>
+      <table class="min-w-full border border-gray-200 rounded-lg text-sm">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="p-2 border">ID</th>
+            <th class="p-2 border">Product</th>
+            <th class="p-2 border">User</th>
+            <th class="p-2 border">Rating</th>
+            <th class="p-2 border">Comment</th>
+            <th class="p-2 border">Date</th>
+          </tr>
+        </thead>
+        <tbody>
+        <?php foreach ($recentReviews as $r): ?>
+          <tr class="hover:bg-gray-50">
+            <td class="p-2 border"><?= e($r['id']) ?></td>
+            <td class="p-2 border"><?= e($r['product_name']) ?></td>
+            <td class="p-2 border"><?= e($r['user_name']) ?></td>
+            <td class="p-2 border"><?= e($r['rating']) ?></td>
+            <td class="p-2 border" style="max-width:320px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="<?= e($r['comment'] ?? '') ?>"><?= e($r['comment'] ?? '') ?></td>
+            <td class="p-2 border"><?= e($r['created_at']) ?></td>
+          </tr>
+        <?php endforeach; ?>
+        <?php if (empty($recentReviews)): ?>
+          <tr><td colspan="6" class="p-3 text-center text-gray-500">No reviews yet.</td></tr>
+        <?php endif; ?>
         </tbody>
       </table>
     </section>
