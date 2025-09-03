@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Sep 03, 2025 at 08:37 AM
+-- Generation Time: Sep 03, 2025 at 08:57 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -561,6 +561,13 @@ CREATE TABLE `seller_subscriptions` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `seller_subscriptions`
+--
+
+INSERT INTO `seller_subscriptions` (`id`, `seller_id`, `plan_type`, `monthly_fee`, `features`, `start_date`, `end_date`, `is_active`, `auto_renew`, `created_at`) VALUES
+(4, 4, 'basic', 299.00, '[\"basic_listing\",\"order_management\",\"basic_analytics\"]', '2025-09-03', '2026-09-03', 1, 1, '2025-09-03 06:47:58');
+
 -- --------------------------------------------------------
 
 --
@@ -909,7 +916,9 @@ ALTER TABLE `store_settings`
 --
 ALTER TABLE `users`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `email` (`email`);
+  ADD UNIQUE KEY `email` (`email`),
+  ADD KEY `idx_users_account_status` (`account_status`),
+  ADD KEY `idx_users_role_status` (`role`,`account_status`);
 
 --
 -- Indexes for table `user_addresses`
@@ -1073,7 +1082,7 @@ ALTER TABLE `seller_payments`
 -- AUTO_INCREMENT for table `seller_subscriptions`
 --
 ALTER TABLE `seller_subscriptions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `shipping_zones`

@@ -119,6 +119,8 @@ try {
 
       <a href="manage-seller-payments.php" class="block text-gray-700 font-medium hover:text-indigo-600">💳 Seller Payments</a>
 
+      <a href="../public/logout.php" class="block text-red-600 font-medium hover:text-red-800 mt-6">🚪 Logout</a>
+
     </nav>
     <div class="mt-10 flex items-center space-x-3">
       <img src="assets/img/admin-avatar.png" class="w-10 h-10 rounded-full border" alt="Admin">
