@@ -3,6 +3,7 @@ session_start();
 require_once __DIR__ . '/../config/config.php';
 require_once __DIR__ . '/../app/Database.php';
 require_once __DIR__ . '/../app/Product.php';
+require_once __DIR__ . '/../app/AccountManager.php';
 
 if (empty($_SESSION['user']) || ($_SESSION['user']['role'] ?? '') !== 'seller') {
     http_response_code(403); 
@@ -12,6 +13,13 @@ if (empty($_SESSION['user']) || ($_SESSION['user']['role'] ?? '') !== 'seller') 
 }
 
 $user = $_SESSION['user'];
+
+// Check if account is frozen
+if (AccountManager::isAccountFrozen($user['id'])) {
+    header('Location: payment-upload.php');
+    exit;
+}
+
 $pdo = db();
 
 // Fetch comprehensive stats
@@ -148,6 +156,9 @@ $categoryStats = $stmt->fetchAll();
                 </a>
                 <a href="analytics.php" class="text-gray-500 hover:text-gray-700 py-4 px-1 font-medium">
                     <i class="fas fa-chart-bar mr-2"></i>Analytics
+                </a>
+                <a href="payment-upload.php" class="text-gray-500 hover:text-gray-700 py-4 px-1 font-medium">
+                    <i class="fas fa-credit-card mr-2"></i>Payment
                 </a>
                 <a href="../public/index.php" class="text-gray-500 hover:text-gray-700 py-4 px-1 font-medium">
                     <i class="fas fa-home mr-2"></i>View Store

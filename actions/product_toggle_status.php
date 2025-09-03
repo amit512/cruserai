@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../config/config.php';
+require_once __DIR__ . '/../app/AccountManager.php';
 verify_csrf();
 
 if (empty($_SESSION['user']) || ($_SESSION['user']['role'] ?? '') !== 'seller') {
@@ -7,16 +8,11 @@ if (empty($_SESSION['user']) || ($_SESSION['user']['role'] ?? '') !== 'seller') 
     die('Forbidden');
 }
 
-// Server-side freeze enforcement
-try {
-    $stmt = db()->prepare("SELECT is_frozen FROM seller_accounts WHERE seller_id = ?");
-    $stmt->execute([ (int)$_SESSION['user']['id'] ]);
-    $acc = $stmt->fetch();
-    if ($acc && (int)$acc['is_frozen'] === 1) {
-        http_response_code(403);
-        die('Account frozen. Please clear dues.');
-    }
-} catch (Exception $e) {}
+// Check if account is frozen
+if (AccountManager::isAccountFrozen($_SESSION['user']['id'])) {
+    http_response_code(403);
+    die('Account frozen. Please submit payment proof to continue.');
+}
 
 $product_id = (int)($_POST['product_id'] ?? 0);
 $is_active = (int)($_POST['is_active'] ?? 0);

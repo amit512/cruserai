@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Sep 02, 2025 at 11:10 AM
+-- Generation Time: Sep 03, 2025 at 08:37 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -276,7 +276,7 @@ INSERT INTO `orders` (`id`, `buyer_id`, `seller_id`, `product_id`, `quantity`, `
 (20, 2, 4, 6, 1, 20000.00, 'Pending', '2025-09-01 09:02:07'),
 (21, 2, 4, 6, 1, 20000.00, 'Delivered', '2025-09-01 09:02:25'),
 (22, 2, 4, 6, 1, 20000.00, 'Delivered', '2025-09-01 09:02:31'),
-(23, 2, 4, 6, 1, 20000.00, 'Delivered', '2025-09-01 09:04:19');
+(23, 2, 4, 6, 1, 20000.00, '', '2025-09-01 09:04:19');
 
 -- --------------------------------------------------------
 
@@ -459,8 +459,55 @@ CREATE TABLE `product_reviews` (
   `user_id` int(11) NOT NULL,
   `rating` int(1) NOT NULL CHECK (`rating` >= 1 and `rating` <= 5),
   `comment` text DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `images` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`images`))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `product_reviews`
+--
+
+INSERT INTO `product_reviews` (`id`, `product_id`, `user_id`, `rating`, `comment`, `created_at`, `images`) VALUES
+(1, 6, 2, 5, 'dewsds', '2025-09-02 09:19:50', '[\"reviews\\/cbde5e35f7c219ca580798d802551c82b1eb579c.png\"]'),
+(4, 9, 2, 5, 'jhhhhhhhhhhhhhhhhh', '2025-09-02 09:24:16', NULL),
+(6, 8, 2, 3, '', '2025-09-02 09:33:23', NULL),
+(12, 10, 2, 5, '', '2025-09-02 09:39:23', NULL),
+(14, 11, 2, 1, 'ghatiya', '2025-09-02 09:40:29', NULL),
+(16, 12, 2, 5, 'ghaatiya', '2025-09-02 09:46:12', NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `review_comments`
+--
+
+CREATE TABLE `review_comments` (
+  `id` int(11) NOT NULL,
+  `review_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `comment` text NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `seller_accounts`
+--
+
+CREATE TABLE `seller_accounts` (
+  `seller_id` int(11) NOT NULL,
+  `is_frozen` tinyint(1) DEFAULT 0,
+  `freeze_threshold` decimal(10,2) DEFAULT 1000.00,
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `seller_accounts`
+--
+
+INSERT INTO `seller_accounts` (`seller_id`, `is_frozen`, `freeze_threshold`, `updated_at`) VALUES
+(4, 1, 1000.00, '2025-09-02 10:28:21');
 
 -- --------------------------------------------------------
 
@@ -478,6 +525,39 @@ CREATE TABLE `seller_notifications` (
   `is_read` tinyint(1) DEFAULT 0,
   `is_email_sent` tinyint(1) DEFAULT 0,
   `is_sms_sent` tinyint(1) DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `seller_payments`
+--
+
+CREATE TABLE `seller_payments` (
+  `id` int(11) NOT NULL,
+  `seller_id` int(11) NOT NULL,
+  `amount` decimal(10,2) NOT NULL,
+  `note` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `seller_subscriptions`
+--
+
+CREATE TABLE `seller_subscriptions` (
+  `id` int(11) NOT NULL,
+  `seller_id` int(11) NOT NULL,
+  `plan_type` enum('basic','premium','enterprise') DEFAULT 'basic',
+  `monthly_fee` decimal(10,2) NOT NULL,
+  `features` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`features`)),
+  `start_date` date NOT NULL,
+  `end_date` date NOT NULL,
+  `is_active` tinyint(1) DEFAULT 1,
+  `auto_renew` tinyint(1) DEFAULT 1,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -537,6 +617,10 @@ CREATE TABLE `users` (
   `email` varchar(100) NOT NULL,
   `password` varchar(255) NOT NULL,
   `role` enum('buyer','seller','admin') DEFAULT 'buyer',
+  `account_status` enum('active','frozen','suspended') DEFAULT 'active',
+  `frozen_reason` text DEFAULT NULL,
+  `frozen_at` timestamp NULL DEFAULT NULL,
+  `subscription_expires` date DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -544,10 +628,10 @@ CREATE TABLE `users` (
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `name`, `email`, `password`, `role`, `created_at`) VALUES
-(2, 'om prakash', 'om@gmail.com', '$2y$10$N8WWLOGIpqe0VH66alnMCemzPHfQDJs8CHF3.OZl3JVzVkAhfvoc2', 'buyer', '2025-08-28 12:31:17'),
-(4, 'om prakash', 'om12@gmail.com', '$2y$10$yVvbLYwsxnNS7gOMvICWAeZgvmjBg5Kze7Z.GY82KM/vpYuq4xQ9q', 'seller', '2025-08-28 16:27:03'),
-(7, 'admin', 'admin@gmail.com', '$2y$10$wW2SqJdx8ykUKxA6qx6I5uIH44KuCzrNwsAwhbgIEgq1MtlLr7AN2', 'admin', '2025-08-28 17:34:39');
+INSERT INTO `users` (`id`, `name`, `email`, `password`, `role`, `account_status`, `frozen_reason`, `frozen_at`, `subscription_expires`, `created_at`) VALUES
+(2, 'om prakash', 'om@gmail.com', '$2y$10$N8WWLOGIpqe0VH66alnMCemzPHfQDJs8CHF3.OZl3JVzVkAhfvoc2', 'buyer', 'active', NULL, NULL, NULL, '2025-08-28 12:31:17'),
+(4, 'om prakash', 'om12@gmail.com', '$2y$10$yVvbLYwsxnNS7gOMvICWAeZgvmjBg5Kze7Z.GY82KM/vpYuq4xQ9q', 'seller', 'active', NULL, NULL, NULL, '2025-08-28 16:27:03'),
+(7, 'admin', 'admin@gmail.com', '$2y$10$wW2SqJdx8ykUKxA6qx6I5uIH44KuCzrNwsAwhbgIEgq1MtlLr7AN2', 'admin', 'active', NULL, NULL, NULL, '2025-08-28 17:34:39');
 
 -- --------------------------------------------------------
 
@@ -768,6 +852,19 @@ ALTER TABLE `product_reviews`
   ADD KEY `user_id` (`user_id`);
 
 --
+-- Indexes for table `review_comments`
+--
+ALTER TABLE `review_comments`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_review_id` (`review_id`);
+
+--
+-- Indexes for table `seller_accounts`
+--
+ALTER TABLE `seller_accounts`
+  ADD PRIMARY KEY (`seller_id`);
+
+--
 -- Indexes for table `seller_notifications`
 --
 ALTER TABLE `seller_notifications`
@@ -776,6 +873,22 @@ ALTER TABLE `seller_notifications`
   ADD KEY `idx_type` (`type`),
   ADD KEY `idx_is_read` (`is_read`),
   ADD KEY `idx_created_at` (`created_at`);
+
+--
+-- Indexes for table `seller_payments`
+--
+ALTER TABLE `seller_payments`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_seller_id` (`seller_id`);
+
+--
+-- Indexes for table `seller_subscriptions`
+--
+ALTER TABLE `seller_subscriptions`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_seller_id` (`seller_id`),
+  ADD KEY `idx_end_date` (`end_date`),
+  ADD KEY `idx_is_active` (`is_active`);
 
 --
 -- Indexes for table `shipping_zones`
@@ -936,6 +1049,12 @@ ALTER TABLE `product_performance`
 -- AUTO_INCREMENT for table `product_reviews`
 --
 ALTER TABLE `product_reviews`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+
+--
+-- AUTO_INCREMENT for table `review_comments`
+--
+ALTER TABLE `review_comments`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
@@ -943,6 +1062,18 @@ ALTER TABLE `product_reviews`
 --
 ALTER TABLE `seller_notifications`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `seller_payments`
+--
+ALTER TABLE `seller_payments`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `seller_subscriptions`
+--
+ALTER TABLE `seller_subscriptions`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `shipping_zones`
@@ -1011,6 +1142,12 @@ ALTER TABLE `products`
 ALTER TABLE `product_reviews`
   ADD CONSTRAINT `product_reviews_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `product_reviews_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `seller_subscriptions`
+--
+ALTER TABLE `seller_subscriptions`
+  ADD CONSTRAINT `fk_seller_subscriptions_seller_id` FOREIGN KEY (`seller_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `user_addresses`

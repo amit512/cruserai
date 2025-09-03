@@ -3,6 +3,7 @@ session_start();
 require_once __DIR__ . '/../config/config.php';
 require_once __DIR__ . '/../app/Database.php';
 require_once __DIR__ . '/../app/Product.php';
+require_once __DIR__ . '/../app/AccountManager.php';
 
 if (empty($_SESSION['user']) || ($_SESSION['user']['role'] ?? '') !== 'seller') {
     http_response_code(403); 
@@ -11,6 +12,12 @@ if (empty($_SESSION['user']) || ($_SESSION['user']['role'] ?? '') !== 'seller') 
 }
 
 $user = $_SESSION['user'];
+
+// Check if account is frozen
+if (AccountManager::isAccountFrozen($user['id'])) {
+    header('Location: payment-upload.php');
+    exit;
+}
 $pdo = db();
 
 // Get filter parameters
