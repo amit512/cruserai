@@ -7,6 +7,13 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'seller') {
     exit;
 }
 
+// Account freeze guard
+require_once __DIR__ . '/../app/AccountManager.php';
+if (AccountManager::isAccountFrozen($_SESSION['user']['id'])) {
+    header('Location: ../seller/payment-upload.php');
+    exit;
+}
+
 $user = $_SESSION['user'];
 $pdo = db();
 
