@@ -160,14 +160,29 @@ class AccountManager {
      */
     public static function getPendingPayments(): array {
         self::ensurePaymentsSchema();
-        $stmt = Database::pdo()->query("
-            SELECT sp.*, u.name as seller_name, u.email as seller_email
-            FROM seller_payments sp
-            JOIN users u ON sp.seller_id = u.id
-            WHERE sp.status = 'pending'
-            ORDER BY sp.created_at DESC
-        ");
-        return $stmt->fetchAll();
+        try {
+            $stmt = Database::pdo()->query("
+                SELECT sp.*, u.name as seller_name, u.email as seller_email
+                FROM seller_payments sp
+                JOIN users u ON sp.seller_id = u.id
+                WHERE sp.status = 'pending'
+                ORDER BY sp.created_at DESC
+            ");
+            return $stmt->fetchAll();
+        } catch (PDOException $e) {
+            if ($e->getCode() === '42S22') { // Missing column on older schema
+                self::ensurePaymentsSchema();
+                $stmt = Database::pdo()->query("
+                    SELECT sp.*, u.name as seller_name, u.email as seller_email
+                    FROM seller_payments sp
+                    JOIN users u ON sp.seller_id = u.id
+                    WHERE sp.status = 'pending'
+                    ORDER BY sp.created_at DESC
+                ");
+                return $stmt->fetchAll();
+            }
+            throw $e;
+        }
     }
     
     /**
