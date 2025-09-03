@@ -67,6 +67,7 @@ try {
       <a href="manage-orders.php" class="block text-gray-700 font-medium hover:text-indigo-600">📦 Orders</a>
       <a href="manage-products.php" class="block text-gray-700 font-medium hover:text-indigo-600">🛒 Products</a>
       <a href="manage-users.php" class="block text-gray-700 font-medium hover:text-indigo-600">👤 Customers</a>
+      <a href="manage-seller-payments.php" class="block text-gray-700 font-medium hover:text-indigo-600">💳 Seller Payments</a>
       <a href="../public/logout.php" class="block text-red-600 font-medium hover:text-red-800 mt-6">🚪 Logout</a>
 
     </nav>

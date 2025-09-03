@@ -157,6 +157,9 @@ $categoryStats = $stmt->fetchAll();
                 <a href="analytics.php" class="text-gray-500 hover:text-gray-700 py-4 px-1 font-medium">
                     <i class="fas fa-chart-bar mr-2"></i>Analytics
                 </a>
+                <a href="payment-upload.php" class="text-gray-500 hover:text-gray-700 py-4 px-1 font-medium">
+                    <i class="fas fa-credit-card mr-2"></i>Payment
+                </a>
                 <a href="../public/index.php" class="text-gray-500 hover:text-gray-700 py-4 px-1 font-medium">
                     <i class="fas fa-home mr-2"></i>View Store
                 </a>
