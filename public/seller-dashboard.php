@@ -86,6 +86,12 @@ try {
     }
 } catch (Exception $e) {}
 
+// If account is frozen, redirect to payment upload page
+if ($isFrozen) {
+    header('Location: ../seller/payment-upload.php');
+    exit;
+}
+
 // --- Fetch stats ---
 $stmt = $pdo->prepare("SELECT COUNT(*) AS total_products FROM products WHERE seller_id=?");
 $stmt->execute([$user['id']]);

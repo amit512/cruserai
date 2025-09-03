@@ -93,199 +93,36 @@ $sellers = $stmt->fetchAll();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage Seller Payments - <?= SITE_NAME ?></title>
-    <link rel="stylesheet" href="../public/handcraf.css"/>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
     <style>
-        .admin-container {
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 0 1rem;
-        }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-        
-        .stat-card {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            text-align: center;
-        }
-        
-        .stat-number {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #3b82f6;
-        }
-        
-        .section {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            margin-bottom: 2rem;
-            overflow: hidden;
-        }
-        
-        .section-header {
-            background: #f8fafc;
-            padding: 1rem 1.5rem;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        
-        .section-content {
-            padding: 1.5rem;
-        }
-        
-        .table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        
-        .table th,
-        .table td {
-            padding: 0.75rem;
-            text-align: left;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        
-        .table th {
-            background: #f8fafc;
-            font-weight: 600;
-        }
-        
-        .status-badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.875rem;
-            font-weight: 500;
-        }
-        
-        .status-pending {
-            background: #fef3c7;
-            color: #92400e;
-        }
-        
-        .status-verified {
-            background: #dcfce7;
-            color: #166534;
-        }
-        
-        .status-rejected {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-        
-        .status-frozen {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-        
-        .status-active {
-            background: #dcfce7;
-            color: #166534;
-        }
-        
-        .btn {
-            padding: 0.5rem 1rem;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.875rem;
-            transition: all 0.2s ease;
-        }
-        
-        .btn-primary {
-            background: #3b82f6;
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background: #2563eb;
-        }
-        
-        .btn-danger {
-            background: #dc2626;
-            color: white;
-        }
-        
-        .btn-danger:hover {
-            background: #b91c1c;
-        }
-        
-        .btn-success {
-            background: #16a34a;
-            color: white;
-        }
-        
-        .btn-success:hover {
-            background: #15803d;
-        }
-        
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-        }
-        
-        .modal-content {
-            background-color: white;
-            margin: 10% auto;
-            padding: 2rem;
-            border-radius: 10px;
-            width: 90%;
-            max-width: 500px;
-        }
-        
-        .form-group {
-            margin-bottom: 1rem;
-        }
-        
-        .form-label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-        }
-        
-        .form-input, .form-textarea {
-            width: 100%;
-            padding: 0.5rem;
-            border: 1px solid #d1d5db;
-            border-radius: 4px;
-        }
-        
-        .alert {
-            padding: 1rem;
-            border-radius: 6px;
-            margin-bottom: 1rem;
-        }
-        
-        .alert-success {
-            background: #dcfce7;
-            border: 1px solid #bbf7d0;
-            color: #16a34a;
-        }
-        
-        .alert-error {
-            background: #fee2e2;
-            border: 1px solid #fecaca;
-            color: #dc2626;
-        }
+        .status-badge { padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.875rem; font-weight: 500; }
+        .status-pending { background: #fef3c7; color: #92400e; }
+        .status-verified { background: #dcfce7; color: #166534; }
+        .status-rejected { background: #fee2e2; color: #991b1b; }
+        .status-frozen { background: #fee2e2; color: #991b1b; }
+        .status-active { background: #dcfce7; color: #166534; }
+        .btn { padding: 0.5rem 1rem; border: none; border-radius: 6px; cursor: pointer; font-size: 0.875rem; transition: all 0.2s ease; }
+        .btn-primary { background: #3b82f6; color: white; }
+        .btn-primary:hover { background: #2563eb; }
+        .btn-danger { background: #dc2626; color: white; }
+        .btn-danger:hover { background: #b91c1c; }
+        .btn-success { background: #16a34a; color: white; }
+        .btn-success:hover { background: #15803d; }
+        .modal { display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background-color: rgba(0,0,0,0.5); }
+        .modal-content { background:white; margin:10% auto; padding:2rem; border-radius:10px; width:90%; max-width:500px; }
+        .form-group { margin-bottom: 1rem; }
+        .form-label { display:block; margin-bottom:0.5rem; font-weight:600; }
+        .form-input, .form-textarea { width:100%; padding:0.5rem; border:1px solid #d1d5db; border-radius:4px; }
+        .alert { padding:1rem; border-radius:6px; margin-bottom:1rem; }
+        .alert-success { background:#dcfce7; border:1px solid #bbf7d0; color:#16a34a; }
+        .alert-error { background:#fee2e2; border:1px solid #fecaca; color:#dc2626; }
     </style>
 </head>
 <body>
     <?php require_once __DIR__ . '/../includes/header.php'; ?>
     
-    <div class="admin-container">
+    <div class="admin-container max-w-7xl mx-auto">
         <h1 class="text-3xl font-bold mb-6">
             <i class="fas fa-credit-card"></i> Manage Seller Payments & Accounts
         </h1>
@@ -303,75 +140,75 @@ $sellers = $stmt->fetchAll();
         <?php endif; ?>
         
         <!-- Statistics -->
-        <div class="stats-grid">
-            <div class="stat-card">
+        <div class="stats-grid grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
+            <div class="stat-card bg-white p-6 rounded-xl shadow text-center">
                 <div class="stat-number"><?= count($pendingPayments) ?></div>
                 <div class="text-gray-600">Pending Payments</div>
             </div>
-            <div class="stat-card">
+            <div class="stat-card bg-white p-6 rounded-xl shadow text-center">
                 <div class="stat-number"><?= count(array_filter($sellers, fn($s) => $s['account_status'] === 'frozen')) ?></div>
                 <div class="text-gray-600">Frozen Accounts</div>
             </div>
-            <div class="stat-card">
+            <div class="stat-card bg-white p-6 rounded-xl shadow text-center">
                 <div class="stat-number"><?= count(array_filter($sellers, fn($s) => $s['account_status'] === 'active')) ?></div>
                 <div class="text-gray-600">Active Sellers</div>
             </div>
-            <div class="stat-card">
+            <div class="stat-card bg-white p-6 rounded-xl shadow text-center">
                 <div class="stat-number"><?= count($sellers) ?></div>
                 <div class="text-gray-600">Total Sellers</div>
             </div>
         </div>
         
         <!-- Pending Payments -->
-        <div class="section">
-            <div class="section-header">
+        <div class="section bg-white rounded-xl shadow mb-8 overflow-hidden">
+            <div class="section-header px-6 py-4 border-b border-gray-200 bg-gray-50">
                 <h2 class="text-xl font-semibold">
                     <i class="fas fa-clock"></i> Pending Payment Verifications
                 </h2>
             </div>
-            <div class="section-content">
+            <div class="section-content p-6">
                 <?php if (empty($pendingPayments)): ?>
                     <p class="text-gray-600 text-center py-4">No pending payments to verify.</p>
                 <?php else: ?>
                     <div class="overflow-x-auto">
-                        <table class="table">
-                            <thead>
+                        <table class="min-w-full text-sm">
+                            <thead class="bg-gray-100">
                                 <tr>
-                                    <th>Seller</th>
-                                    <th>Payment Type</th>
-                                    <th>Amount</th>
-                                    <th>Method</th>
-                                    <th>Transaction ID</th>
-                                    <th>Proof</th>
-                                    <th>Submitted</th>
-                                    <th>Actions</th>
+                                    <th class="p-3 text-left">Seller</th>
+                                    <th class="p-3 text-left">Payment Type</th>
+                                    <th class="p-3 text-left">Amount</th>
+                                    <th class="p-3 text-left">Method</th>
+                                    <th class="p-3 text-left">Transaction ID</th>
+                                    <th class="p-3 text-left">Proof</th>
+                                    <th class="p-3 text-left">Submitted</th>
+                                    <th class="p-3 text-left">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php foreach ($pendingPayments as $payment): ?>
-                                    <tr>
-                                        <td>
+                                    <tr class="border-b">
+                                        <td class="p-3">
                                             <div>
                                                 <div class="font-medium"><?= htmlspecialchars($payment['seller_name']) ?></div>
                                                 <div class="text-sm text-gray-600"><?= htmlspecialchars($payment['seller_email']) ?></div>
                                             </div>
                                         </td>
-                                        <td>
+                                        <td class="p-3">
                                             <span class="status-badge status-pending">
                                                 <?= ucfirst($payment['payment_type']) ?>
                                             </span>
                                         </td>
-                                        <td>₹<?= number_format($payment['amount'], 2) ?></td>
-                                        <td><?= ucwords(str_replace('_', ' ', $payment['payment_method'])) ?></td>
-                                        <td><?= htmlspecialchars($payment['transaction_id'] ?: 'N/A') ?></td>
-                                        <td>
+                                        <td class="p-3">₹<?= number_format($payment['amount'], 2) ?></td>
+                                        <td class="p-3"><?= ucwords(str_replace('_', ' ', $payment['payment_method'])) ?></td>
+                                        <td class="p-3"><?= htmlspecialchars($payment['transaction_id'] ?: 'N/A') ?></td>
+                                        <td class="p-3">
                                             <a href="../public/<?= htmlspecialchars($payment['payment_proof']) ?>" 
                                                target="_blank" class="btn btn-primary">
                                                 <i class="fas fa-eye"></i> View
                                             </a>
                                         </td>
-                                        <td><?= date('M d, Y H:i', strtotime($payment['created_at'])) ?></td>
-                                        <td>
+                                        <td class="p-3"><?= date('M d, Y H:i', strtotime($payment['created_at'])) ?></td>
+                                        <td class="p-3">
                                             <button onclick="showVerificationModal(<?= $payment['id'] ?>)" 
                                                     class="btn btn-success">
                                                 <i class="fas fa-check"></i> Verify
@@ -391,50 +228,50 @@ $sellers = $stmt->fetchAll();
         </div>
         
         <!-- Seller Accounts -->
-        <div class="section">
-            <div class="section-header">
+        <div class="section bg-white rounded-xl shadow mb-8 overflow-hidden">
+            <div class="section-header px-6 py-4 border-b border-gray-200 bg-gray-50">
                 <h2 class="text-xl font-semibold">
                     <i class="fas fa-users"></i> Seller Account Management
                 </h2>
             </div>
-            <div class="section-content">
+            <div class="section-content p-6">
                 <div class="overflow-x-auto">
-                    <table class="table">
+                    <table class="min-w-full text-sm">
                         <thead>
                             <tr>
-                                <th>Seller</th>
-                                <th>Account Status</th>
-                                <th>Products</th>
-                                <th>Frozen Reason</th>
-                                <th>Frozen Since</th>
-                                <th>Actions</th>
+                                <th class="p-3 text-left">Seller</th>
+                                <th class="p-3 text-left">Account Status</th>
+                                <th class="p-3 text-left">Products</th>
+                                <th class="p-3 text-left">Frozen Reason</th>
+                                <th class="p-3 text-left">Frozen Since</th>
+                                <th class="p-3 text-left">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php foreach ($sellers as $seller): ?>
-                                <tr>
-                                    <td>
+                                <tr class="border-b">
+                                    <td class="p-3">
                                         <div>
                                             <div class="font-medium"><?= htmlspecialchars($seller['name']) ?></div>
                                             <div class="text-sm text-gray-600"><?= htmlspecialchars($seller['email']) ?></div>
                                         </div>
                                     </td>
-                                    <td>
+                                    <td class="p-3">
                                         <span class="status-badge status-<?= $seller['account_status'] ?>">
                                             <?= ucfirst($seller['account_status']) ?>
                                         </span>
                                     </td>
-                                    <td>
+                                    <td class="p-3">
                                         <div class="text-sm">
                                             <div>Total: <?= $seller['total_products'] ?></div>
                                             <div>Active: <?= $seller['active_products'] ?></div>
                                         </div>
                                     </td>
-                                    <td><?= htmlspecialchars($seller['frozen_reason'] ?: 'N/A') ?></td>
-                                    <td>
+                                    <td class="p-3"><?= htmlspecialchars($seller['frozen_reason'] ?: 'N/A') ?></td>
+                                    <td class="p-3">
                                         <?= $seller['frozen_at'] ? date('M d, Y H:i', strtotime($seller['frozen_at'])) : 'N/A' ?>
                                     </td>
-                                    <td>
+                                    <td class="p-3">
                                         <?php if ($seller['account_status'] === 'active'): ?>
                                             <button onclick="showFreezeModal(<?= $seller['id'] ?>)" 
                                                     class="btn btn-danger">
