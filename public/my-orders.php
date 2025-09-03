@@ -592,14 +592,14 @@ foreach ($orders as $order) {
                                             </form>
                                         <?php endif; ?>
                                         
-                                        <?php if ($order['status'] === 'Shipped'): ?>
-                                            <a href="#" class="action-btn btn-secondary">
+                                        <?php if ($order['status'] === 'Shipped' || $order['status'] === 'Delivered'): ?>
+                                            <a href="order-tracking.php?order_id=<?= $order['id'] ?>" class="action-btn btn-secondary">
                                                 <i class="fas fa-truck"></i> Track Order
                                             </a>
                                         <?php endif; ?>
                                         
                                         <?php if ($order['status'] === 'Delivered'): ?>
-                                            <a href="#" class="action-btn btn-primary">
+                                            <a href="product-reviews.php?product_id=<?= (int)$order['product_id'] ?>" class="action-btn btn-primary">
                                                 <i class="fas fa-star"></i> Review Product
                                             </a>
                                         <?php endif; ?>

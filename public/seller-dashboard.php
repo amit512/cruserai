@@ -10,6 +10,82 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'seller') {
 $user = $_SESSION['user'];
 $pdo = db();
 
+// --- Commission & Freeze check ---
+// Ensure payments and account tables exist
+try {
+    $pdo->exec("CREATE TABLE IF NOT EXISTS seller_payments (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        seller_id INT NOT NULL,
+        amount DECIMAL(10,2) NOT NULL,
+        note VARCHAR(255) DEFAULT NULL,
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_seller_id (seller_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS seller_accounts (
+        seller_id INT PRIMARY KEY,
+        is_frozen TINYINT(1) DEFAULT 0,
+        freeze_threshold DECIMAL(10,2) DEFAULT 1000.00,
+        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
+} catch (Exception $e) { /* ignore */ }
+
+// Get commission rate (default 5%)
+$commissionRate = 5.0;
+try {
+    $stmt = $pdo->prepare("SELECT commission_rate FROM commission_structure WHERE seller_id = ? ORDER BY effective_from DESC LIMIT 1");
+    $stmt->execute([$user['id']]);
+    $row = $stmt->fetch();
+    if ($row && isset($row['commission_rate'])) {
+        $commissionRate = (float)$row['commission_rate'];
+    }
+} catch (Exception $e) {}
+
+// Compute due commission from Delivered orders
+$deliveredTotal = 0.0;
+try {
+    $stmt = $pdo->prepare("SELECT IFNULL(SUM(total),0) FROM orders WHERE seller_id = ? AND status = 'Delivered'");
+    $stmt->execute([$user['id']]);
+    $deliveredTotal = (float)$stmt->fetchColumn();
+} catch (Exception $e) {}
+
+$commissionAccrued = round($deliveredTotal * ($commissionRate / 100.0), 2);
+
+// Sum of payments made by seller
+$paymentsTotal = 0.0;
+try {
+    $stmt = $pdo->prepare("SELECT IFNULL(SUM(amount),0) FROM seller_payments WHERE seller_id = ?");
+    $stmt->execute([$user['id']]);
+    $paymentsTotal = (float)$stmt->fetchColumn();
+} catch (Exception $e) {}
+
+$commissionDue = max(0.0, $commissionAccrued - $paymentsTotal);
+
+// Load/create seller account row
+$isFrozen = false;
+$freezeThreshold = 1000.00;
+try {
+    $stmt = $pdo->prepare("SELECT is_frozen, freeze_threshold FROM seller_accounts WHERE seller_id = ?");
+    $stmt->execute([$user['id']]);
+    $acc = $stmt->fetch();
+    if (!$acc) {
+        $pdo->prepare("INSERT INTO seller_accounts (seller_id, is_frozen, freeze_threshold) VALUES (?, 0, ?)")
+            ->execute([$user['id'], $freezeThreshold]);
+    } else {
+        $isFrozen = (bool)$acc['is_frozen'];
+        $freezeThreshold = (float)$acc['freeze_threshold'];
+    }
+} catch (Exception $e) {}
+
+// Auto-freeze if due exceeds threshold
+try {
+    if ($commissionDue > $freezeThreshold) {
+        $isFrozen = true;
+        $pdo->prepare("UPDATE seller_accounts SET is_frozen = 1 WHERE seller_id = ?")
+            ->execute([$user['id']]);
+    }
+} catch (Exception $e) {}
+
 // --- Fetch stats ---
 $stmt = $pdo->prepare("SELECT COUNT(*) AS total_products FROM products WHERE seller_id=?");
 $stmt->execute([$user['id']]);
@@ -672,6 +748,7 @@ $orders = $stmt->fetchAll();
   </nav>
   <div class="header-icons">
     <span class="welcome">Hello, <?= htmlspecialchars($user['name']) ?></span>
+    <a href="seller-payment.php" class="btn orders">Payments</a>
     <a href="logout.php" class="btn logout">Logout</a>
   </div>
 </header>
@@ -680,6 +757,16 @@ $orders = $stmt->fetchAll();
   <div class="container">
     <h1>Welcome back, <?= htmlspecialchars($user['name']) ?>!</h1>
     <p>Manage your products and orders efficiently.</p>
+    <?php if ($isFrozen): ?>
+      <div style="margin-top:1rem; padding:0.75rem 1rem; border-radius:8px; background:#fff3cd; color:#856404;">
+        <strong>Account Frozen:</strong> Outstanding commission of Rs <?= number_format($commissionDue, 2) ?> exceeds your limit (Rs <?= number_format($freezeThreshold, 2) ?>).
+        Please make a payment to restore full access.
+      </div>
+    <?php elseif ($commissionDue > 0): ?>
+      <div style="margin-top:1rem; padding:0.75rem 1rem; border-radius:8px; background:#e8f5e9; color:#2e7d32;">
+        <strong>Commission Due:</strong> Rs <?= number_format($commissionDue, 2) ?> at <?= number_format($commissionRate, 2) ?>%.
+      </div>
+    <?php endif; ?>
   </div>
 </section>
 
@@ -726,13 +813,13 @@ $orders = $stmt->fetchAll();
       <div class="sidebar-section">
         <h3>Quick Actions</h3>
         <div class="quick-links">
-          <a href="../app/add-product.php" class="quick-link">
+          <a href="<?= $isFrozen ? '#' : '../app/add-product.php' ?>" class="quick-link" <?= $isFrozen ? 'onclick="return false;" style="opacity:.6; cursor:not-allowed;"' : '' ?>>
             <i class="fas fa-plus"></i> Add Product
           </a>
-          <a href="../app/manage-products.php" class="quick-link">
+          <a href="<?= $isFrozen ? '#' : '../app/manage-products.php' ?>" class="quick-link" <?= $isFrozen ? 'onclick="return false;" style="opacity:.6; cursor:not-allowed;"' : '' ?>>
             <i class="fas fa-edit"></i> Manage Products
           </a>
-          <a href="../app/manage-order.php" class="quick-link">
+          <a href="<?= $isFrozen ? '#' : '../app/manage-order.php' ?>" class="quick-link" <?= $isFrozen ? 'onclick="return false;" style="opacity:.6; cursor:not-allowed;"' : '' ?>>
             <i class="fas fa-shopping-bag"></i> View Orders
           </a>
           <a href="index.php" class="quick-link">
@@ -747,7 +834,7 @@ $orders = $stmt->fetchAll();
       <section class="dashboard-products">
         <h2>
           Your Products
-          <a href="../app/add-product.php" class="btn btn-primary">
+          <a href="<?= $isFrozen ? '#' : '../app/add-product.php' ?>" class="btn btn-primary" <?= $isFrozen ? 'onclick="return false;" style="opacity:.6; cursor:not-allowed;"' : '' ?>>
             <i class="fas fa-plus"></i> Add New Product
           </a>
         </h2>

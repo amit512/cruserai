@@ -262,8 +262,17 @@ function isActive($page) {
             <?php if ($role === 'seller'): ?>
             <li><a href="../app/manage-products.php">Products</a></li>
 
-             <li><a href="../app/manage-order.php">Orders</a></li>
-             <?php endif; ?>
+            <li><a href="../app/manage-order.php">Orders</a></li>
+            
+            <?php endif; ?>
+            <?php if ($role === 'buyer'): ?>
+            
+            <li><a href="../public/my-orders.php">Orders</a></li>
+            
+            <?php endif; ?>
+            <?php if ($role === 'admin'): ?>
+                <li><a href="../admin/billing.php" class="<?= isActive('billing.php') ?>">Billing</a></li>
+            <?php endif; ?>
         </ul>
     </nav>
 

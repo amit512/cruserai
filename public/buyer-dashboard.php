@@ -1271,12 +1271,12 @@ try {
 
     .action-icon {
       font-size: 2.5rem;
-      color: #4CAF50;
+      color:rgb(215, 227, 216);
       margin-bottom: 1rem;
     }
 
     .action-card:hover .action-icon {
-      color: #4CAF50;
+      color: #rgb(255, 255, 255);
     }
 
     .action-card h3 {

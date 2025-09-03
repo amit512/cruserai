@@ -142,6 +142,7 @@ class Product {
                 WHERE is_active = 1 
                 GROUP BY category 
                 ORDER BY count DESC
+                
             ");
             return $stmt->fetchAll();
         } catch (Exception $e) {
@@ -208,6 +209,50 @@ class Product {
                 ['slug' => 'leather', 'name' => 'Leather Goods', 'icon' => 'briefcase'],
                 ['slug' => 'candles', 'name' => 'Candles & Soaps', 'icon' => 'fire']
             ];
+        }
+    }
+
+    /**
+     * Ensure product_reviews table exists (id, product_id, user_id, rating, comment, images, created_at)
+     */
+    public static function ensureProductReviewsSchema(): void {
+        try {
+            Database::pdo()->exec("CREATE TABLE IF NOT EXISTS product_reviews (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                product_id INT NOT NULL,
+                user_id INT NOT NULL,
+                rating TINYINT NOT NULL,
+                comment TEXT NULL,
+                images JSON NULL,
+                created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_product_id (product_id),
+                INDEX idx_user_product (user_id, product_id)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
+        } catch (Exception $e) {
+            // ignore
+        }
+    }
+
+    public static function getRatingSummary(int $productId): array {
+        self::ensureProductReviewsSchema();
+        try {
+            $stmt = Database::pdo()->prepare("SELECT COUNT(*) as count, COALESCE(AVG(rating),0) as avg FROM product_reviews WHERE product_id = ?");
+            $stmt->execute([$productId]);
+            $row = $stmt->fetch() ?: ['count' => 0, 'avg' => 0];
+            return ['count' => (int)$row['count'], 'avg' => round((float)$row['avg'], 2)];
+        } catch (Exception $e) {
+            return ['count' => 0, 'avg' => 0.0];
+        }
+    }
+
+    public static function getProductReviews(int $productId, int $limit = 50, int $offset = 0): array {
+        self::ensureProductReviewsSchema();
+        try {
+            $stmt = Database::pdo()->prepare("SELECT pr.*, u.name AS customer_name FROM product_reviews pr JOIN users u ON u.id = pr.user_id WHERE pr.product_id = ? ORDER BY pr.created_at DESC LIMIT $limit OFFSET $offset");
+            $stmt->execute([$productId]);
+            return $stmt->fetchAll();
+        } catch (Exception $e) {
+            return [];
         }
     }
 }

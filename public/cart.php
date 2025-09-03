@@ -36,6 +36,9 @@ if (isset($_GET['error'])) {
         case 'insufficient_stock':
             $error = "Insufficient stock available for this item.";
             break;
+        case 'seller_frozen':
+            $error = "This seller's account is temporarily unavailable. Please try again later or choose another product.";
+            break;
     }
 }
 
