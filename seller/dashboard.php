@@ -5,20 +5,35 @@ require_once __DIR__ . '/../app/Database.php';
 require_once __DIR__ . '/../app/Product.php';
 require_once __DIR__ . '/../app/AccountManager.php';
 
+// SIMPLE FREEZE CHECK - REDIRECT IMMEDIATELY IF FROZEN
+if (!empty($_SESSION['user']) && ($_SESSION['user']['role'] ?? '') === 'seller') {
+    $userId = $_SESSION['user']['id'];
+    
+    // Direct database check - no fancy logic, just check if frozen
+    try {
+        $pdo = db();
+        $stmt = $pdo->prepare("SELECT account_status FROM users WHERE id = ? AND role = 'seller'");
+        $stmt->execute([$userId]);
+        $result = $stmt->fetch();
+        
+        if ($result && $result['account_status'] === 'frozen') {
+            header('Location: /homecraft-php/seller/payment-upload.php');
+            exit;
+        }
+    } catch (Exception $e) {
+        // If error, redirect to payment page anyway (better safe than sorry)
+        header('Location: /homecraft-php/seller/payment-upload.php');
+        exit;
+    }
+}
+
 if (empty($_SESSION['user']) || ($_SESSION['user']['role'] ?? '') !== 'seller') {
     http_response_code(403); 
     echo "<p>Forbidden.</p>"; 
-    require __DIR__ . '/../includes/footer.php'; 
     exit;
 }
 
 $user = $_SESSION['user'];
-
-// Check if account is frozen
-if (AccountManager::isAccountFrozen($user['id'])) {
-    header('Location: payment-upload.php');
-    exit;
-}
 
 $pdo = db();
 
@@ -59,46 +74,6 @@ $stmt = $pdo->prepare("SELECT category, COUNT(*) as count FROM products WHERE se
 $stmt->execute([$user['id']]);
 $categoryStats = $stmt->fetchAll();
 ?>
-      
-<div class="flex items-center justify-between mb-4">
-  <h2 class="text-xl font-semibold">Seller Dashboard</h2>
-  <a href="./product-new.php" class="rounded bg-black px-4 py-2 text-white">Add product</a>
-</div>
-<div class="rounded-xl bg-white shadow overflow-x-auto">
-  <table class="min-w-full text-sm">
-    <thead class="bg-gray-100">
-      <tr>
-        <th class="text-left p-3">ID</th>
-        <th class="text-left p-3">Title</th>
-        <th class="text-left p-3">Price</th>
-        <th class="text-left p-3">Stock</th>
-        <th class="text-left p-3">Active</th>
-        <th class="text-left p-3">Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      <?php foreach ($mine as $p): ?>
-      <tr class="border-t">
-        <td class="p-3"><?php echo (int)$p['id']; ?></td>
-        <td class="p-3"><?php echo htmlspecialchars($p['title']); ?></td>
-        <td class="p-3">Rs. <?php echo number_format((float)$p['price'], 2); ?></td>
-        <td class="p-3"><?php echo (int)$p['stock']; ?></td>
-        <td class="p-3"><?php echo $p['is_active'] ? 'Yes' : 'No'; ?></td>
-        <td class="p-3 space-x-2">
-          <a class="underline" href="./product-edit.php?id=<?php echo (int)$p['id']; ?>">Edit</a>
-          <form action="../actions/product_delete.php" method="post" class="inline" onsubmit="return confirm('Delete this product?')">
-            <input type="hidden" name="csrf_token" value="<?php echo csrf_token(); ?>">
-            <input type="hidden" name="id" value="<?php echo (int)$p['id']; ?>">
-            <button type="submit" class="underline text-red-600">Delete</button>
-          </form>
-        </td>
-      </tr>
-      <?php endforeach; ?>
-    </tbody>
-  </table>
-</div>
-<?php require_once __DIR__ . '/../includes/footer.php'; ?>
-=======
 
 <!DOCTYPE html>
 <html lang="en">
@@ -168,6 +143,81 @@ $categoryStats = $stmt->fetchAll();
     </nav>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Trial/Subscription Status Banner -->
+        <?php
+        $accountStatus = AccountManager::getAccountStatus($user['id']);
+        $subscriptionExpires = $accountStatus['subscription_expires'] ?? null;
+        $today = new DateTime('today');
+        $isTrial = false;
+        $trialDaysLeft = 0;
+        
+        if ($subscriptionExpires) {
+            try {
+                $expiryDate = new DateTime($subscriptionExpires);
+                if ($expiryDate >= $today) {
+                    $createdAt = new DateTime($user['created_at'] ?? 'now');
+                    $trialEnd = (clone $createdAt)->modify('+3 days');
+                    if ($expiryDate <= $trialEnd) {
+                        $isTrial = true;
+                        $trialDaysLeft = max(0, $today->diff($trialEnd)->days);
+                    }
+                }
+            } catch (Exception $e) {}
+        }
+        ?>
+        
+        <?php if ($isTrial && $trialDaysLeft > 0): ?>
+            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-clock text-yellow-400 text-xl"></i>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-yellow-800">
+                            Trial Period Active
+                        </h3>
+                        <div class="mt-2 text-sm text-yellow-700">
+                            <p>You have <strong><?= $trialDaysLeft ?> day<?= $trialDaysLeft !== 1 ? 's' : '' ?></strong> left in your trial period.</p>
+                            <p class="mt-1">To continue selling after the trial, please <a href="payment-upload.php" class="font-medium underline">subscribe to a monthly plan</a>.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <?php elseif ($subscriptionExpires && $today > new DateTime($subscriptionExpires)): ?>
+            <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-exclamation-triangle text-red-400 text-xl"></i>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-red-800">
+                            Subscription Expired
+                        </h3>
+                        <div class="mt-2 text-sm text-red-700">
+                            <p>Your subscription expired on <strong><?= date('M d, Y', strtotime($subscriptionExpires)) ?></strong>.</p>
+                            <p class="mt-1">Please <a href="payment-upload.php" class="font-medium underline">renew your subscription</a> to continue selling.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <?php elseif ($subscriptionExpires && $today <= new DateTime($subscriptionExpires)): ?>
+            <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-check-circle text-green-400 text-xl"></i>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-green-800">
+                            Subscription Active
+                        </h3>
+                        <div class="mt-2 text-sm text-green-700">
+                            <p>Your subscription is active until <strong><?= date('M d, Y', strtotime($subscriptionExpires)) ?></strong>.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <?php endif; ?>
+
         <!-- Stats Overview -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <div class="stat-card bg-white rounded-lg shadow p-6">
@@ -347,4 +397,3 @@ $categoryStats = $stmt->fetchAll();
     </script>
 </body>
 </html>
->>>>>>> Incoming (Background Agent changes)

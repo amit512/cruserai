@@ -10,6 +10,7 @@ function e($v) {
 // Get logged-in user info
 $user = $_SESSION['user'] ?? null;
 $role = $user['role'] ?? null;
+$frozen = $user['is_frozen'] ?? null;
 
 // Decide dashboard link if buyer/seller
 $dashboardHref = $role === 'buyer' ? 'buyer-dashboard.php'
@@ -248,6 +249,7 @@ function isActive($page) {
 
     <nav class="nav-links">
         <ul>
+        <?php if ($frozen == 'false'): ?>
             <li><a href="index.php" class="<?= isActive('index.php') ?>">Home</a></li>
             <li><a href="about.php" class="<?= isActive('about.php') ?>">About</a></li>
 
@@ -260,6 +262,7 @@ function isActive($page) {
                 
             <?php endif; ?>
             <?php if ($role === 'seller'): ?>
+                
             <li><a href="../app/manage-products.php">Products</a></li>
 
             <li><a href="../app/manage-order.php">Orders</a></li>
@@ -272,6 +275,7 @@ function isActive($page) {
             <?php endif; ?>
             <?php if ($role === 'admin'): ?>
                 <li><a href="../admin/billing.php" class="<?= isActive('billing.php') ?>">Billing</a></li>
+            <?php endif; ?>
             <?php endif; ?>
         </ul>
     </nav>
@@ -289,9 +293,12 @@ function isActive($page) {
                 </a>
                 
             <?php endif; ?>
-            
-            <a href="logout.php" class="btn logout">Logout</a>
+            <?php if ($frozen == 'false'): ?>
+                 <a href="logout.php" class="btn logout">Logout</a>
+                 <?php endif; ?>
+                 <a href="../public/logout.php" class="btn logout">Logout</a>
         <?php else: ?>
+            
             <a href="login.php" class="btn login">Login</a>
             <a href="register.php" class="btn register">Register</a>
         <?php endif; ?>

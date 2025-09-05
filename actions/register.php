@@ -29,8 +29,16 @@ try {
 
     // Hash password and insert user
     $hashed = password_hash($pass, PASSWORD_DEFAULT);
-    $stmt = $pdo->prepare("INSERT INTO users (name,email,password,role) VALUES (?,?,?,?)");
-    $stmt->execute([$name,$email,$hashed,$role]);
+    $stmt = $pdo->prepare("INSERT INTO users (name,email,password,role,subscription_expires) VALUES (?,?,?,?,?)");
+    
+    // Set 3-day trial for sellers, no expiry for buyers
+    $subscriptionExpires = null;
+    if ($role === 'seller') {
+        $trialEnd = (new DateTime('today'))->modify('+3 days')->format('Y-m-d');
+        $subscriptionExpires = $trialEnd;
+    }
+    
+    $stmt->execute([$name,$email,$hashed,$role,$subscriptionExpires]);
 
     // Save user info in session
     $_SESSION['user'] = [

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Sep 03, 2025 at 08:57 AM
+-- Generation Time: Sep 04, 2025 at 06:47 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -36,6 +36,41 @@ CREATE TABLE `admin_logs` (
   `created_at` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `admin_logs`
+--
+
+INSERT INTO `admin_logs` (`id`, `admin_id`, `action`, `target_table`, `target_id`, `created_at`) VALUES
+(1, 7, 'freeze_account', 'users', 4, '2025-09-03 13:42:18'),
+(2, 7, 'freeze_account', 'users', 4, '2025-09-03 13:46:47'),
+(3, 7, 'freeze_account', 'users', 4, '2025-09-03 13:47:51'),
+(4, 7, 'freeze_account', 'users', 4, '2025-09-03 13:48:18'),
+(5, 7, 'freeze_account', 'users', 4, '2025-09-03 13:50:12'),
+(6, 7, 'freeze_account', 'users', 4, '2025-09-03 13:56:27'),
+(7, 7, 'freeze_account', 'users', 4, '2025-09-03 13:57:39'),
+(8, 7, 'unfreeze_account', 'users', 4, '2025-09-03 14:21:37'),
+(9, 7, 'verify_payment', 'seller_payments', 1, '2025-09-03 14:21:37'),
+(10, 7, 'freeze_account', 'users', 4, '2025-09-03 19:58:36'),
+(11, 7, 'freeze_account', 'users', 8, '2025-09-03 19:58:36'),
+(12, 7, 'unfreeze_account', 'users', 4, '2025-09-03 19:58:47'),
+(13, 7, 'freeze_account', 'users', 4, '2025-09-03 19:58:47'),
+(14, 7, 'unfreeze_account', 'users', 4, '2025-09-03 19:58:49'),
+(15, 7, 'freeze_account', 'users', 4, '2025-09-03 19:58:49'),
+(16, 7, 'unfreeze_account', 'users', 4, '2025-09-03 19:58:50'),
+(17, 7, 'freeze_account', 'users', 4, '2025-09-03 19:58:50'),
+(18, 7, 'unfreeze_account', 'users', 4, '2025-09-03 19:58:51'),
+(19, 7, 'freeze_account', 'users', 4, '2025-09-03 19:58:51'),
+(20, 7, 'unfreeze_account', 'users', 4, '2025-09-04 10:16:14'),
+(21, 7, 'freeze_account', 'users', 4, '2025-09-04 10:16:14'),
+(22, 7, 'unfreeze_account', 'users', 4, '2025-09-04 10:16:16'),
+(23, 7, 'freeze_account', 'users', 4, '2025-09-04 10:16:16'),
+(24, 7, 'unfreeze_account', 'users', 8, '2025-09-04 10:16:18'),
+(25, 7, 'freeze_account', 'users', 8, '2025-09-04 10:16:18'),
+(26, 7, 'unfreeze_account', 'users', 8, '2025-09-04 10:16:27'),
+(27, 7, 'freeze_account', 'users', 8, '2025-09-04 10:16:28'),
+(28, 7, 'unfreeze_account', 'users', 8, '2025-09-04 10:16:40'),
+(29, 7, 'freeze_account', 'users', 8, '2025-09-04 10:16:40');
+
 -- --------------------------------------------------------
 
 --
@@ -49,13 +84,6 @@ CREATE TABLE `cart_items` (
   `quantity` int(11) DEFAULT 1,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `cart_items`
---
-
-INSERT INTO `cart_items` (`id`, `user_id`, `product_id`, `quantity`, `created_at`) VALUES
-(22, 2, 10, 6, '2025-09-02 07:23:14');
 
 -- --------------------------------------------------------
 
@@ -276,7 +304,8 @@ INSERT INTO `orders` (`id`, `buyer_id`, `seller_id`, `product_id`, `quantity`, `
 (20, 2, 4, 6, 1, 20000.00, 'Pending', '2025-09-01 09:02:07'),
 (21, 2, 4, 6, 1, 20000.00, 'Delivered', '2025-09-01 09:02:25'),
 (22, 2, 4, 6, 1, 20000.00, 'Delivered', '2025-09-01 09:02:31'),
-(23, 2, 4, 6, 1, 20000.00, '', '2025-09-01 09:04:19');
+(23, 2, 4, 6, 1, 20000.00, '', '2025-09-01 09:04:19'),
+(24, 2, 8, 13, 10, 5000.00, 'Delivered', '2025-09-03 13:59:27');
 
 -- --------------------------------------------------------
 
@@ -311,7 +340,8 @@ INSERT INTO `order_details` (`id`, `order_id`, `shipping_address`, `shipping_cit
 (8, 20, '123 Test Street', 'Test City', 'Test State', '12345', '555-1234', 'cod', '2025-09-01 09:02:07'),
 (9, 21, '123 Test Street', 'Test City', 'Test State', '12345', '555-1234', 'cod', '2025-09-01 09:02:25'),
 (10, 22, '123 Test Street', 'Test City', 'Test State', '12345', '555-1234', 'cod', '2025-09-01 09:02:31'),
-(11, 23, '123 Test Street', 'Test City', 'Test State', '12345', '555-1234', 'cod', '2025-09-01 09:04:19');
+(11, 23, '123 Test Street', 'Test City', 'Test State', '12345', '555-1234', 'cod', '2025-09-01 09:04:19'),
+(12, 24, 'edcede', 'efce', 'bhhhh', '98128', '9812402806', 'cod', '2025-09-03 13:59:27');
 
 -- --------------------------------------------------------
 
@@ -378,7 +408,8 @@ INSERT INTO `products` (`id`, `seller_id`, `name`, `description`, `category`, `p
 (9, 4, 'key Holder', 'Wooden Key holder made of wood', 'woodwork', 3400.00, 23, 1, 'uploads/1756489195_77.jpeg', '2025-08-29 17:39:55'),
 (10, 4, 'Bag', 'Handcrafted Bag', 'clothing', 7000.00, 45, 1, 'uploads/1756489950_12.jpg', '2025-08-29 17:52:30'),
 (11, 4, 'Necklace', 'necklace made with shells', 'jewelry', 5000.00, 79, 1, 'uploads/1756490059_76.jpeg', '2025-08-29 17:54:19'),
-(12, 4, 'Doll', 'Handcrafted Doll', 'home-decor', 1000.00, 3, 1, 'uploads/1756528952_7.jpeg', '2025-08-30 04:42:32');
+(12, 4, 'Doll', 'Handcrafted Doll', 'home-decor', 1000.00, 3, 1, 'uploads/1756528952_7.jpeg', '2025-08-30 04:42:32'),
+(13, 8, 'Home Made Jam', 'Organic home made jam.', 'general', 500.00, 990, 1, 'uploads/1756907795_images.jpg', '2025-09-03 13:56:35');
 
 -- --------------------------------------------------------
 
@@ -507,7 +538,8 @@ CREATE TABLE `seller_accounts` (
 --
 
 INSERT INTO `seller_accounts` (`seller_id`, `is_frozen`, `freeze_threshold`, `updated_at`) VALUES
-(4, 1, 1000.00, '2025-09-02 10:28:21');
+(4, 1, 1000.00, '2025-09-04 04:31:16'),
+(8, 1, 1000.00, '2025-09-04 04:31:40');
 
 -- --------------------------------------------------------
 
@@ -539,8 +571,24 @@ CREATE TABLE `seller_payments` (
   `seller_id` int(11) NOT NULL,
   `amount` decimal(10,2) NOT NULL,
   `note` varchar(255) DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `status` enum('pending','verified','rejected') NOT NULL DEFAULT 'pending',
+  `admin_notes` text DEFAULT NULL,
+  `verified_by` int(11) DEFAULT NULL,
+  `verified_at` timestamp NULL DEFAULT NULL,
+  `payment_type` varchar(50) DEFAULT NULL,
+  `currency` varchar(10) DEFAULT 'INR',
+  `payment_method` varchar(50) DEFAULT NULL,
+  `transaction_id` varchar(100) DEFAULT NULL,
+  `payment_proof` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `seller_payments`
+--
+
+INSERT INTO `seller_payments` (`id`, `seller_id`, `amount`, `note`, `created_at`, `status`, `admin_notes`, `verified_by`, `verified_at`, `payment_type`, `currency`, `payment_method`, `transaction_id`, `payment_proof`) VALUES
+(1, 4, 500.00, NULL, '2025-09-03 08:36:12', 'verified', '', 7, '2025-09-03 08:36:37', 'subscription', 'INR', 'cash', '12345678', 'uploads/payments/payment_4_1756888572.png');
 
 -- --------------------------------------------------------
 
@@ -566,7 +614,7 @@ CREATE TABLE `seller_subscriptions` (
 --
 
 INSERT INTO `seller_subscriptions` (`id`, `seller_id`, `plan_type`, `monthly_fee`, `features`, `start_date`, `end_date`, `is_active`, `auto_renew`, `created_at`) VALUES
-(4, 4, 'basic', 299.00, '[\"basic_listing\",\"order_management\",\"basic_analytics\"]', '2025-09-03', '2026-09-03', 1, 1, '2025-09-03 06:47:58');
+(4, 4, 'basic', 500.00, '[\"basic_listing\",\"order_management\",\"basic_analytics\"]', '2025-09-03', '2026-09-03', 1, 1, '2025-09-03 06:47:58');
 
 -- --------------------------------------------------------
 
@@ -637,8 +685,10 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`id`, `name`, `email`, `password`, `role`, `account_status`, `frozen_reason`, `frozen_at`, `subscription_expires`, `created_at`) VALUES
 (2, 'om prakash', 'om@gmail.com', '$2y$10$N8WWLOGIpqe0VH66alnMCemzPHfQDJs8CHF3.OZl3JVzVkAhfvoc2', 'buyer', 'active', NULL, NULL, NULL, '2025-08-28 12:31:17'),
-(4, 'om prakash', 'om12@gmail.com', '$2y$10$yVvbLYwsxnNS7gOMvICWAeZgvmjBg5Kze7Z.GY82KM/vpYuq4xQ9q', 'seller', 'active', NULL, NULL, NULL, '2025-08-28 16:27:03'),
-(7, 'admin', 'admin@gmail.com', '$2y$10$wW2SqJdx8ykUKxA6qx6I5uIH44KuCzrNwsAwhbgIEgq1MtlLr7AN2', 'admin', 'active', NULL, NULL, NULL, '2025-08-28 17:34:39');
+(4, 'om prakash', 'om12@gmail.com', '$2y$10$yVvbLYwsxnNS7gOMvICWAeZgvmjBg5Kze7Z.GY82KM/vpYuq4xQ9q', 'seller', 'frozen', 'Annual subscription expired', '2025-09-04 04:31:16', '2025-08-31', '2025-08-28 16:27:03'),
+(7, 'admin', 'admin@gmail.com', '$2y$10$wW2SqJdx8ykUKxA6qx6I5uIH44KuCzrNwsAwhbgIEgq1MtlLr7AN2', 'admin', 'active', NULL, NULL, NULL, '2025-08-28 17:34:39'),
+(8, 'pagal', 'pagal@gmail.com', '$2y$10$yAi9g0iVENegZfSQioJHC.Nu/4VZJLAlK2pQErNOP2czdlTOx0kHu', 'seller', 'frozen', 'Annual subscription expired', '2025-09-04 04:31:40', '2025-09-06', '2025-09-03 13:53:04'),
+(10, 'amit raut', 'ratamit987654321@gmail.com', '$2y$10$ILK4AGLGOU1f8AcR32XkIOVpc0Wb8lRvHz75nmXm5RDRFF8yaWJ1W', 'seller', 'active', NULL, NULL, '2025-09-07', '2025-09-04 04:37:41');
 
 -- --------------------------------------------------------
 
@@ -944,13 +994,13 @@ ALTER TABLE `wishlist`
 -- AUTO_INCREMENT for table `admin_logs`
 --
 ALTER TABLE `admin_logs`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
 
 --
 -- AUTO_INCREMENT for table `cart_items`
 --
 ALTER TABLE `cart_items`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- AUTO_INCREMENT for table `commission_structure`
@@ -1010,13 +1060,13 @@ ALTER TABLE `notification_preferences`
 -- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
 
 --
 -- AUTO_INCREMENT for table `order_details`
 --
 ALTER TABLE `order_details`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `order_notes`
@@ -1034,7 +1084,7 @@ ALTER TABLE `order_tracking`
 -- AUTO_INCREMENT for table `products`
 --
 ALTER TABLE `products`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT for table `product_alerts`
@@ -1076,7 +1126,7 @@ ALTER TABLE `seller_notifications`
 -- AUTO_INCREMENT for table `seller_payments`
 --
 ALTER TABLE `seller_payments`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `seller_subscriptions`
@@ -1100,7 +1150,7 @@ ALTER TABLE `store_settings`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `user_addresses`

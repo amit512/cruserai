@@ -246,7 +246,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php foreach ($subscriptionPlans as $plan): ?>
                 <div class="plan-card <?= $plan['plan_type'] === 'premium' ? 'featured' : '' ?>">
                     <h3 class="text-xl font-semibold mb-2"><?= ucfirst($plan['plan_type']) ?></h3>
-                    <div class="plan-price">₹<?= number_format($plan['monthly_fee'], 2) ?>/month</div>
+                    <div class="plan-price">Rs<?= number_format($plan['monthly_fee'], 2) ?>/month</div>
                     <ul class="text-sm text-gray-600 mt-3">
                         <?php 
                         $features = json_decode($plan['features'], true);

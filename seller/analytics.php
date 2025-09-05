@@ -14,7 +14,7 @@ $user = $_SESSION['user'];
 
 // Check if account is frozen
 if (AccountManager::isAccountFrozen($user['id'])) {
-    header('Location: payment-upload.php');
+    header('Location: /homecraft-php/seller/payment-upload.php');
     exit;
 }
 $pdo = db();

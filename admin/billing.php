@@ -3,6 +3,7 @@
  session_start();
  require_once __DIR__ . '/../config/config.php';
  require_once __DIR__ . '/../app/Database.php';
+ require_once __DIR__ . '/../app/AccountManager.php';
  
  if (!isset($_SESSION['user']) || ($_SESSION['user']['role'] ?? '') !== 'admin') {
      header('Location: ../public/login.php');
@@ -10,6 +11,32 @@
  }
  
  $pdo = db();
+
+// Handle freeze/unfreeze actions
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    verify_csrf();
+    $billingAction = $_POST['billing_action'] ?? '';
+    $sellerId = (int)($_POST['seller_id'] ?? 0);
+    if ($sellerId > 0 && ($billingAction === 'freeze' || $billingAction === 'unfreeze')) {
+        try {
+            if ($billingAction === 'freeze') {
+                AccountManager::freezeAccount($sellerId, 'Annual subscription expired / Admin action', (int)($_SESSION['user']['id'] ?? 0));
+                // Mirror to legacy flag
+                $stmt = $pdo->prepare("INSERT INTO seller_accounts (seller_id, is_frozen) VALUES (?, 1) ON DUPLICATE KEY UPDATE is_frozen = 1");
+                $stmt->execute([$sellerId]);
+            } else {
+                AccountManager::unfreezeAccount($sellerId, (int)($_SESSION['user']['id'] ?? 0));
+                // Mirror to legacy flag
+                $stmt = $pdo->prepare("INSERT INTO seller_accounts (seller_id, is_frozen) VALUES (?, 0) ON DUPLICATE KEY UPDATE is_frozen = 0");
+                $stmt->execute([$sellerId]);
+            }
+        } catch (Exception $e) {
+            error_log('billing.php action failed: ' . $e->getMessage());
+        }
+        header('Location: billing.php');
+        exit;
+    }
+}
  
  // Ensure tables exist
  try {
@@ -31,7 +58,7 @@
  } catch (Exception $e) {}
  
  // Fetch sellers
- $sellers = $pdo->query("SELECT id, name, email FROM users WHERE role='seller' ORDER BY name ASC")->fetchAll(PDO::FETCH_ASSOC);
+ $sellers = $pdo->query("SELECT id, name, email, account_status, subscription_expires FROM users WHERE role='seller' ORDER BY name ASC")->fetchAll(PDO::FETCH_ASSOC);
  
  // Helper to get commission rate
  function get_commission_rate(PDO $pdo, int $sellerId): float {
@@ -71,6 +98,29 @@
          if ($accRow) $acc = $accRow;
      } catch (Exception $e) {}
  
+     // Annual subscription status
+     $subscriptionExpires = $s['subscription_expires'] ?? null;
+     $annualPaid = false;
+     if (!empty($subscriptionExpires)) {
+         try {
+             $annualPaid = (new DateTime($subscriptionExpires)) >= (new DateTime('today'));
+         } catch (Exception $e) { $annualPaid = false; }
+     }
+
+     // Effective frozen check combining new and legacy systems
+     $userFrozen = (($s['account_status'] ?? 'active') === 'frozen');
+     $legacyFrozen = (int)$acc['is_frozen'] === 1;
+     $effectiveFrozen = $userFrozen || $legacyFrozen || !$annualPaid;
+
+     // Auto-freeze if subscription expired and user not already frozen
+     if (!$annualPaid && !$userFrozen) {
+         try {
+             AccountManager::freezeAccount($sellerId, 'Annual subscription expired', (int)($_SESSION['user']['id'] ?? 0));
+             $pdo->prepare("INSERT INTO seller_accounts (seller_id, is_frozen) VALUES (?, 1) ON DUPLICATE KEY UPDATE is_frozen = 1")->execute([$sellerId]);
+             $effectiveFrozen = true;
+         } catch (Exception $e) {}
+     }
+
      $rows[] = [
          'seller' => $s,
          'rate' => $rate,
@@ -78,8 +128,10 @@
          'accrued' => $accrued,
          'paid' => $paid,
          'due' => $due,
-         'is_frozen' => (int)$acc['is_frozen'],
-         'threshold' => (float)$acc['freeze_threshold']
+         'is_frozen' => $effectiveFrozen ? 1 : 0,
+         'threshold' => (float)$acc['freeze_threshold'],
+         'subscription_expires' => $subscriptionExpires,
+         'annual_paid' => $annualPaid
      ];
  }
  ?>
@@ -126,6 +178,8 @@
              <th class="p-2 border">Paid (Rs)</th>
              <th class="p-2 border">Due (Rs)</th>
              <th class="p-2 border">Threshold</th>
+             <th class="p-2 border">Sub Expires</th>
+             <th class="p-2 border">Annual Paid?</th>
              <th class="p-2 border">Status</th>
              <th class="p-2 border">Actions</th>
            </tr>
@@ -150,6 +204,14 @@
                  <button class="bg-indigo-600 text-white px-3 py-1 rounded">Save</button>
                </form>
              </td>
+             <td class="p-2 border text-right"><?php echo $r['subscription_expires'] ? htmlspecialchars(date('Y-m-d', strtotime($r['subscription_expires']))) : 'N/A'; ?></td>
+             <td class="p-2 border text-center">
+               <?php if ($r['annual_paid']): ?>
+                 <span class="badge bg-green-100 text-green-700">Yes</span>
+               <?php else: ?>
+                 <span class="badge bg-yellow-100 text-yellow-700">No</span>
+               <?php endif; ?>
+             </td>
              <td class="p-2 border text-center">
                <?php if ($r['is_frozen']): ?>
                  <span class="badge bg-red-100 text-red-700">Frozen</span>
@@ -165,14 +227,17 @@
                  <input type="text" name="note" placeholder="Note" class="border rounded px-2 py-1">
                  <button class="bg-green-600 text-white px-3 py-1 rounded">Record</button>
                </form>
-               <?php if ($r['is_frozen']): ?>
-                 <form action="../actions/admin_update_seller_account.php" method="post" class="mt-2">
-                   <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrf_token()); ?>">
-                   <input type="hidden" name="seller_id" value="<?php echo $sid; ?>">
-                   <input type="hidden" name="action" value="unfreeze">
+               <form action="billing.php" method="post" class="mt-2">
+                 <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrf_token()); ?>">
+                 <input type="hidden" name="seller_id" value="<?php echo $sid; ?>">
+                 <?php if ($r['is_frozen']): ?>
+                   <input type="hidden" name="billing_action" value="unfreeze">
                    <button class="bg-yellow-600 text-white px-3 py-1 rounded">Unfreeze</button>
-                 </form>
-               <?php endif; ?>
+                 <?php else: ?>
+                   <input type="hidden" name="billing_action" value="freeze">
+                   <button class="bg-red-600 text-white px-3 py-1 rounded">Freeze</button>
+                 <?php endif; ?>
+               </form>
              </td>
            </tr>
            <?php endforeach; ?>

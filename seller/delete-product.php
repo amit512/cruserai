@@ -10,7 +10,7 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'seller') {
 
 // Check if account is frozen
 if (AccountManager::isAccountFrozen($_SESSION['user']['id'])) {
-    header('Location: payment-upload.php');
+    header('Location: /homecraft-php/seller/payment-upload.php');
     exit;
 }
 

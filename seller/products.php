@@ -5,6 +5,28 @@ require_once __DIR__ . '/../app/Database.php';
 require_once __DIR__ . '/../app/Product.php';
 require_once __DIR__ . '/../app/AccountManager.php';
 
+// SIMPLE FREEZE CHECK - REDIRECT IMMEDIATELY IF FROZEN
+if (!empty($_SESSION['user']) && ($_SESSION['user']['role'] ?? '') === 'seller') {
+    $userId = $_SESSION['user']['id'];
+    
+    // Direct database check - no fancy logic, just check if frozen
+    try {
+        $pdo = db();
+        $stmt = $pdo->prepare("SELECT account_status FROM users WHERE id = ? AND role = 'seller'");
+        $stmt->execute([$userId]);
+        $result = $stmt->fetch();
+        
+        if ($result && $result['account_status'] === 'frozen') {
+            header('Location: /homecraft-php/seller/payment-upload.php');
+            exit;
+        }
+    } catch (Exception $e) {
+        // If error, redirect to payment page anyway (better safe than sorry)
+        header('Location: /homecraft-php/seller/payment-upload.php');
+        exit;
+    }
+}
+
 if (empty($_SESSION['user']) || ($_SESSION['user']['role'] ?? '') !== 'seller') {
     http_response_code(403); 
     echo "<p>Forbidden.</p>"; 
@@ -12,12 +34,6 @@ if (empty($_SESSION['user']) || ($_SESSION['user']['role'] ?? '') !== 'seller') 
 }
 
 $user = $_SESSION['user'];
-
-// Check if account is frozen
-if (AccountManager::isAccountFrozen($user['id'])) {
-    header('Location: payment-upload.php');
-    exit;
-}
 $pdo = db();
 
 // Get filter parameters
