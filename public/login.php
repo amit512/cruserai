@@ -30,14 +30,29 @@ require_once __DIR__ . '/../config/config.php'; // include db and csrf
           <i class="fas fa-envelope"></i>
           <input type="email" name="email" placeholder="Email" required />
         </div>
-        <div class="input-group">
+        <div class="input-group password-container">
           <i class="fas fa-lock"></i>
-          <input type="password" name="password" placeholder="Password" required />
+          <input type="password" name="password" id="password" placeholder="Password" required />
+         
         </div>
         <button type="submit" class="btn login-btn">Login</button>
         <p class="switch-text">Don't have an account? <a href="register.php">Register</a></p>
       </form>
     </div>
   </div>
+  <script>
+  const togglePassword = document.getElementById('togglePassword');
+  const passwordInput = document.getElementById('password');
+
+  togglePassword.addEventListener('click', function () {
+    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+    passwordInput.setAttribute('type', type);
+
+    // Toggle eye/eye-slash icon
+    this.classList.toggle('fa-eye');
+    this.classList.toggle('fa-eye-slash');
+  });
+</script>
+
 </body>
 </html>

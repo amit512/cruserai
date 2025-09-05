@@ -115,7 +115,7 @@ try {
       <a href="manage-products.php" class="block text-gray-700 font-medium hover:text-indigo-600">🛒 Products</a>
       <a href="manage-users.php" class="block text-gray-700 font-medium hover:text-indigo-600">👤 Customers</a>
 
-      <a href="billing.php" class="block text-gray-700 font-medium hover:text-indigo-600">💳 Billing</a>
+      
 
       <a href="manage-seller-payments.php" class="block text-gray-700 font-medium hover:text-indigo-600">💳 Seller Payments</a>
 

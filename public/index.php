@@ -449,7 +449,8 @@ if ($searchQuery) {
     </style>
 </head>
 <body>
-    <?php include __DIR__ . '/../includes/header.php'; ?>
+    
+    <?php include __DIR__ . '/../includes/headerb.php'; ?>
 
     <!-- Hero Section -->
     <section class="hero" id="home">

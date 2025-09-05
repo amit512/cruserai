@@ -812,7 +812,7 @@ $inactiveProducts = $stmt->fetch()['inactive'];
             </td>
             <td><?= date("d M Y", strtotime($product['created_at'])) ?></td>
             <td class="actions-cell">
-              <a href="edit-product.php?id=<?= $product['id'] ?>" 
+              <a href="../seller/edit-product.php?id=<?= $product['id'] ?>" 
                  class="btn btn-edit">
                  <i class="fas fa-edit"></i> Edit
                </a>

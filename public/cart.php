@@ -317,7 +317,7 @@ foreach ($cartItems as $item) {
     </style>
 </head>
 <body>
-    <?php include __DIR__ . '/../includes/header.php'; ?>
+    <?php include __DIR__ . '/../includes/headerb.php'; ?>
 
     <div class="cart-container">
         <!-- Header -->
